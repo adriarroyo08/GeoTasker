@@ -1,0 +1,7 @@
+{
+  "name": "GeoTasker Web",
+  "description": "Una aplicación web progresiva (PWA) para gestión de tareas con recordatorios basados en ubicación, implementada en React con integración de Gemini AI.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

@@ -1,0 +1,284 @@
+import React, { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { Plus, List, Map as MapIcon, Mic, Loader2, Navigation, Check, X, Moon, Sun } from 'lucide-react';
+
+import { Task, AppView, GeoLocation } from './types';
+import { DEFAULT_RADIUS } from './constants';
+import { parseTaskWithGemini } from './services/gemini';
+import { useGeofencing } from './hooks/useGeofencing';
+import { MapView } from './components/MapView';
+import { TaskCard } from './components/TaskCard';
+import { EditTaskModal } from './components/EditTaskModal';
+
+const App: React.FC = () => {
+  // Theme State
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') === 'dark' || 
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return false;
+  });
+
+  // State
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [view, setView] = useState<AppView>(AppView.LIST);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [newTaskInput, setNewTaskInput] = useState('');
+  const [pendingTask, setPendingTask] = useState<Partial<Task> | null>(null);
+  const [isSelectingLocation, setIsSelectingLocation] = useState(false);
+  const [tempLocation, setTempLocation] = useState<GeoLocation | null>(null);
+  
+  // Editing State
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  // Custom Hook for Logic
+  const { userLocation, locationError, updateLocation } = useGeofencing(tasks);
+
+  // Theme Effect
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
+
+  const toggleTheme = () => setDarkMode(!darkMode);
+
+  // Add Task Logic
+  const handleSmartAdd = async () => {
+    if (!newTaskInput.trim()) return;
+    setIsProcessing(true);
+
+    try {
+      const parsed = await parseTaskWithGemini(newTaskInput);
+      
+      const newTask: Partial<Task> = {
+        title: parsed.title,
+        description: parsed.description,
+        radius: DEFAULT_RADIUS,
+        isCompleted: false,
+        createdAt: Date.now(),
+      };
+
+      if (parsed.hasLocation) {
+        setPendingTask(newTask);
+        setIsSelectingLocation(true);
+        setView(AppView.MAP);
+        setTempLocation(null); // Reset temp location for new selection
+        alert(`Gemini detectó una ubicación: "${parsed.suggestedLocationName || 'Desconocida'}".\nPor favor, selecciona el punto exacto en el mapa.`);
+      } else {
+        finalizeTaskCreation(newTask);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error al procesar con IA. Intentando modo manual.");
+    } finally {
+      setIsProcessing(false);
+      setNewTaskInput('');
+    }
+  };
+
+  const finalizeTaskCreation = (taskPartial: Partial<Task>, location?: GeoLocation) => {
+    const task: Task = {
+      id: uuidv4(),
+      title: taskPartial.title || 'Nueva Tarea',
+      description: taskPartial.description || '',
+      radius: taskPartial.radius || DEFAULT_RADIUS,
+      isCompleted: false,
+      createdAt: Date.now(),
+      location: location,
+      ...taskPartial
+    };
+    setTasks(prev => [task, ...prev]);
+    setPendingTask(null);
+    setTempLocation(null);
+    setIsSelectingLocation(false);
+    setView(AppView.LIST);
+  };
+
+  const handleMapClick = (lat: number, lng: number) => {
+    if (isSelectingLocation) {
+      setTempLocation({ lat, lng, address: 'Punto seleccionado' });
+    }
+  };
+
+  const handleConfirmLocation = () => {
+    if (isSelectingLocation && pendingTask && tempLocation) {
+      finalizeTaskCreation(pendingTask, tempLocation);
+    }
+  };
+
+  const toggleTask = (id: string) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
+  };
+
+  const deleteTask = (id: string) => {
+    setTasks(prev => prev.filter(t => t.id !== id));
+  };
+
+  const updateTask = (updatedTask: Task) => {
+    setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+    setEditingTask(null);
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-800 shadow-sm px-4 py-3 z-10 flex justify-between items-center transition-colors">
+        <div className="flex items-center gap-2">
+          <div className="bg-blue-600 p-2 rounded-lg text-white">
+            <Navigation size={20} />
+          </div>
+          <h1 className="text-xl font-bold text-gray-800 dark:text-white">GeoTasker</h1>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {locationError && (
+            <div className="text-xs text-red-500 max-w-[150px] leading-tight text-right hidden sm:block">
+              {locationError}
+            </div>
+          )}
+          <button 
+            onClick={toggleTheme}
+            className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+          >
+            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 relative overflow-hidden flex flex-col">
+        {view === AppView.LIST && (
+          <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full">
+            {/* Input Area */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6 transition-colors">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                ¿Qué necesitas hacer?
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newTaskInput}
+                  onChange={(e) => setNewTaskInput(e.target.value)}
+                  placeholder="Ej: Comprar leche en Walmart..."
+                  className="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSmartAdd()}
+                />
+                <button
+                  onClick={handleSmartAdd}
+                  disabled={isProcessing || !newTaskInput.trim()}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  {isProcessing ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
+                  <span className="hidden sm:inline">Agregar</span>
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 flex items-center gap-1">
+                <Mic size={12} />
+                Intenta: "Recordarme sacar dinero cuando pase por el banco" (Gemini AI Powered)
+              </p>
+            </div>
+
+            {/* Task List */}
+            <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3">Mis Tareas ({tasks.filter(t => !t.isCompleted).length})</h2>
+            {tasks.length === 0 ? (
+              <div className="text-center py-10 text-gray-400 dark:text-gray-500">
+                <p>No tienes tareas pendientes.</p>
+                <p className="text-sm">¡Agrega una arriba!</p>
+              </div>
+            ) : (
+              tasks.map(task => (
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  userLat={userLocation?.lat} 
+                  userLng={userLocation?.lng} 
+                  onToggle={toggleTask}
+                  onDelete={deleteTask}
+                  onEdit={setEditingTask}
+                />
+              ))
+            )}
+          </div>
+        )}
+
+        {view === AppView.MAP && (
+          <div className="flex-1 relative">
+            <MapView 
+              tasks={tasks} 
+              userLocation={userLocation} 
+              onMapClick={handleMapClick}
+              selectingLocation={isSelectingLocation}
+              onUserLocationUpdate={updateLocation}
+              previewLocation={tempLocation}
+              previewRadius={pendingTask?.radius}
+              isDarkMode={darkMode}
+            />
+            
+            {/* Location Confirmation Overlay */}
+            {isSelectingLocation && tempLocation && (
+              <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-[1000] flex gap-3 animate-in slide-in-from-bottom-4">
+                <button
+                  onClick={() => {
+                    setIsSelectingLocation(false);
+                    setPendingTask(null);
+                    setTempLocation(null);
+                    setView(AppView.LIST);
+                  }}
+                  className="bg-white dark:bg-gray-800 dark:text-white text-gray-700 px-4 py-3 rounded-2xl shadow-xl font-bold border border-gray-200 dark:border-gray-700 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <X size={20} />
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleConfirmLocation}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-2xl shadow-xl font-bold flex items-center gap-2 hover:bg-blue-700 active:scale-95 transition-all"
+                >
+                  <Check size={20} />
+                  Confirmar Ubicación
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* Bottom Navigation */}
+      <nav className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-3 flex justify-around items-center z-20 transition-colors">
+        <button 
+          onClick={() => {
+            setView(AppView.LIST);
+            setIsSelectingLocation(false);
+          }}
+          className={`flex flex-col items-center gap-1 text-xs font-medium ${view === AppView.LIST ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+        >
+          <List size={24} />
+          Lista
+        </button>
+        
+        <button 
+           onClick={() => setView(AppView.MAP)}
+           className={`flex flex-col items-center gap-1 text-xs font-medium ${view === AppView.MAP ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+        >
+          <MapIcon size={24} />
+          Mapa
+        </button>
+      </nav>
+
+      {/* Edit Modal */}
+      <EditTaskModal 
+        task={editingTask} 
+        isOpen={!!editingTask} 
+        onClose={() => setEditingTask(null)} 
+        onSave={updateTask}
+      />
+    </div>
+  );
+};
+
+export default App;
