@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Plus, List, Map as MapIcon, Mic, Loader2, Navigation, Check, X, Moon, Sun } from 'lucide-react';
+import { Plus, List, Map as MapIcon, Mic, Loader2, Navigation, Check, X, Moon, Sun, Calendar as CalendarIcon } from 'lucide-react';
 
 import { Task, AppView, GeoLocation } from './types';
 import { DEFAULT_RADIUS } from './constants';
@@ -9,6 +9,7 @@ import { useGeofencing } from './hooks/useGeofencing';
 import { MapView } from './components/MapView';
 import { TaskCard } from './components/TaskCard';
 import { EditTaskModal } from './components/EditTaskModal';
+import { CalendarView } from './components/CalendarView';
 
 const App: React.FC = () => {
   // Theme State
@@ -246,6 +247,10 @@ const App: React.FC = () => {
             )}
           </div>
         )}
+
+        {view === AppView.CALENDAR && (
+          <CalendarView tasks={tasks} onToggleTask={toggleTask} />
+        )}
       </main>
 
       {/* Bottom Navigation */}
@@ -259,6 +264,14 @@ const App: React.FC = () => {
         >
           <List size={24} />
           Lista
+        </button>
+
+        <button
+           onClick={() => setView(AppView.CALENDAR)}
+           className={`flex flex-col items-center gap-1 text-xs font-medium ${view === AppView.CALENDAR ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+        >
+          <CalendarIcon size={24} />
+          Calendario
         </button>
         
         <button 

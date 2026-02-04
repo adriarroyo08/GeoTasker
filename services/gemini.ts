@@ -1,10 +1,14 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
 // Initialize Gemini
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Use a dummy key if not present to prevent crash on init, but calls will fail (handled in catch)
+const apiKey = process.env.API_KEY || "dummy_key_for_init";
+const ai = new GoogleGenAI({ apiKey });
 
 export const parseTaskWithGemini = async (input: string): Promise<{ title: string; description: string; hasLocation: boolean; suggestedLocationName?: string }> => {
   try {
+    if (!process.env.API_KEY) throw new Error("API Key missing");
+
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Analiza la siguiente entrada de usuario para una aplicación de tareas y extrae la información en formato JSON.
