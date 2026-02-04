@@ -6,6 +6,7 @@ import { Task, AppView, GeoLocation } from './types';
 import { DEFAULT_RADIUS } from './constants';
 import { parseTaskWithGemini } from './services/gemini';
 import { useGeofencing } from './hooks/useGeofencing';
+import { useTaskManager } from './hooks/useTaskManager';
 import { MapView } from './components/MapView';
 import { TaskCard } from './components/TaskCard';
 import { EditTaskModal } from './components/EditTaskModal';
@@ -21,7 +22,7 @@ const App: React.FC = () => {
   });
 
   // State
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const { tasks, addTask, deleteTask, updateTask, toggleTask } = useTaskManager();
   const [view, setView] = useState<AppView>(AppView.LIST);
   const [isProcessing, setIsProcessing] = useState(false);
   const [newTaskInput, setNewTaskInput] = useState('');
@@ -93,7 +94,7 @@ const App: React.FC = () => {
       location: location,
       ...taskPartial
     };
-    setTasks(prev => [task, ...prev]);
+    addTask(task);
     setPendingTask(null);
     setTempLocation(null);
     setIsSelectingLocation(false);
@@ -112,16 +113,8 @@ const App: React.FC = () => {
     }
   };
 
-  const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
-  };
-
-  const deleteTask = (id: string) => {
-    setTasks(prev => prev.filter(t => t.id !== id));
-  };
-
-  const updateTask = (updatedTask: Task) => {
-    setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+  const handleUpdateTask = (updatedTask: Task) => {
+    updateTask(updatedTask);
     setEditingTask(null);
   };
 
@@ -275,7 +268,7 @@ const App: React.FC = () => {
         task={editingTask} 
         isOpen={!!editingTask} 
         onClose={() => setEditingTask(null)} 
-        onSave={updateTask}
+        onSave={handleUpdateTask}
       />
     </div>
   );
