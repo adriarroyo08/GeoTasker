@@ -20,6 +20,8 @@ export default defineConfig(({ mode }) => {
             short_name: 'GeoTasker',
             description: 'Gestión de tareas con recordatorios basados en ubicación e IA.',
             theme_color: '#ffffff',
+            display: 'standalone',
+            start_url: '/',
             icons: [
               {
                 src: 'icon.svg',
@@ -36,10 +38,10 @@ export default defineConfig(({ mode }) => {
           workbox: {
             runtimeCaching: [
               {
-                urlPattern: /^https:\/\/cdn\.tailwindcss\.com\/.*/i,
-                handler: 'StaleWhileRevalidate',
+                urlPattern: /^https:\/\/unpkg\.com\/leaflet.*/i,
+                handler: 'CacheFirst',
                 options: {
-                  cacheName: 'tailwindcss-cache',
+                  cacheName: 'leaflet-cache',
                   expiration: {
                     maxEntries: 10,
                     maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
@@ -50,10 +52,24 @@ export default defineConfig(({ mode }) => {
                 }
               },
               {
-                urlPattern: /^https:\/\/unpkg\.com\/leaflet.*/i,
+                urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*/i,
                 handler: 'CacheFirst',
                 options: {
-                  cacheName: 'leaflet-cache',
+                  cacheName: 'marker-icon-cache',
+                  expiration: {
+                    maxEntries: 10,
+                    maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
+                  },
+                  cacheableResponse: {
+                    statuses: [0, 200]
+                  }
+                }
+              },
+              {
+                urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\/.*/i,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'marker-shadow-cache',
                   expiration: {
                     maxEntries: 10,
                     maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
