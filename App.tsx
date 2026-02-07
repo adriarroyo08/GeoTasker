@@ -121,7 +121,7 @@ const App: React.FC = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm px-4 py-3 z-10 flex justify-between items-center transition-colors">
+      <header className="bg-white dark:bg-gray-800 shadow-sm px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] z-10 flex justify-between items-center transition-colors">
         <div className="flex items-center gap-2">
           <div className="bg-blue-600 p-2 rounded-lg text-white">
             <Navigation size={20} />
@@ -242,7 +242,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-3 flex justify-around items-center z-20 transition-colors">
+      <nav className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-around items-center z-20 transition-colors">
         <button 
           onClick={() => {
             setView(AppView.LIST);

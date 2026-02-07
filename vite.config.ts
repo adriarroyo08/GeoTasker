@@ -20,6 +20,9 @@ export default defineConfig(({ mode }) => {
             short_name: 'GeoTasker',
             description: 'Gestión de tareas con recordatorios basados en ubicación e IA.',
             theme_color: '#ffffff',
+            background_color: '#ffffff',
+            display: 'standalone',
+            orientation: 'portrait',
             icons: [
               {
                 src: 'icon.svg',
@@ -35,20 +38,6 @@ export default defineConfig(({ mode }) => {
           },
           workbox: {
             runtimeCaching: [
-              {
-                urlPattern: /^https:\/\/cdn\.tailwindcss\.com\/.*/i,
-                handler: 'StaleWhileRevalidate',
-                options: {
-                  cacheName: 'tailwindcss-cache',
-                  expiration: {
-                    maxEntries: 10,
-                    maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  }
-                }
-              },
               {
                 urlPattern: /^https:\/\/unpkg\.com\/leaflet.*/i,
                 handler: 'CacheFirst',
