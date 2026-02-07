@@ -20,7 +20,9 @@ export default defineConfig(({ mode }) => {
             short_name: 'GeoTasker',
             description: 'Gestión de tareas con recordatorios basados en ubicación e IA.',
             theme_color: '#ffffff',
+            background_color: '#ffffff',
             display: 'standalone',
+            orientation: 'portrait',
             start_url: '/',
             icons: [
               {

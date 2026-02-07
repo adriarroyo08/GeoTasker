@@ -2,8 +2,11 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>GeoTasker Web</title>
+    <!-- Leaflet CSS is imported in index.tsx -->
     <!-- Leaflet JS must be loaded before React components try to use it if strictly global, 
          but we will use react-leaflet which handles imports. 
          Adding here for marker icons fix mainly if needed. -->
