@@ -1,12 +1,11 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useState, Suspense } from 'react';
 import { Plus, List, Map as MapIcon, Mic, Loader2, Navigation, Check, X, Moon, Sun } from 'lucide-react';
 
-import { Task, AppView, GeoLocation } from './types';
-import { DEFAULT_RADIUS } from './constants';
-import { parseTaskWithGemini } from './services/gemini';
+import { AppView, Task } from './types';
 import { useGeofencing } from './hooks/useGeofencing';
 import { useTaskManager } from './hooks/useTaskManager';
+import { useTheme } from './hooks/useTheme';
+import { useSmartTask } from './hooks/useSmartTask';
 import { TaskCard } from './components/TaskCard';
 import { EditTaskModal } from './components/EditTaskModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -15,106 +14,27 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 const MapView = React.lazy(() => import('./components/MapView').then(module => ({ default: module.MapView })));
 
 const App: React.FC = () => {
-  // Theme State
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') === 'dark' || 
-        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    }
-    return false;
-  });
-
   // State
   const { tasks, addTask, deleteTask, updateTask, toggleTask } = useTaskManager();
   const [view, setView] = useState<AppView>(AppView.LIST);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [newTaskInput, setNewTaskInput] = useState('');
-  const [pendingTask, setPendingTask] = useState<Partial<Task> | null>(null);
-  const [isSelectingLocation, setIsSelectingLocation] = useState(false);
-  const [tempLocation, setTempLocation] = useState<GeoLocation | null>(null);
-  
-  // Editing State
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // Custom Hook for Logic
+  // Custom Hooks
+  const { darkMode, toggleTheme } = useTheme();
+  const {
+    newTaskInput,
+    setNewTaskInput,
+    isProcessing,
+    handleSmartAdd,
+    pendingTask,
+    isSelectingLocation,
+    tempLocation,
+    handleMapClick,
+    confirmLocation,
+    cancelLocation
+  } = useSmartTask({ addTask, setView });
+
   const { userLocation, locationError, updateLocation } = useGeofencing(tasks);
-
-  // Theme Effect
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [darkMode]);
-
-  const toggleTheme = () => setDarkMode(!darkMode);
-
-  // Add Task Logic
-  const handleSmartAdd = async () => {
-    if (!newTaskInput.trim()) return;
-    setIsProcessing(true);
-
-    try {
-      const parsed = await parseTaskWithGemini(newTaskInput);
-      
-      const newTask: Partial<Task> = {
-        title: parsed.title,
-        description: parsed.description,
-        radius: DEFAULT_RADIUS,
-        isCompleted: false,
-        createdAt: Date.now(),
-      };
-
-      if (parsed.hasLocation) {
-        setPendingTask(newTask);
-        setIsSelectingLocation(true);
-        setView(AppView.MAP);
-        setTempLocation(null); // Reset temp location for new selection
-        alert(`Gemini detectó una ubicación: "${parsed.suggestedLocationName || 'Desconocida'}".\nPor favor, selecciona el punto exacto en el mapa.`);
-      } else {
-        finalizeTaskCreation(newTask);
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Error al procesar con IA. Intentando modo manual.");
-    } finally {
-      setIsProcessing(false);
-      setNewTaskInput('');
-    }
-  };
-
-  const finalizeTaskCreation = (taskPartial: Partial<Task>, location?: GeoLocation) => {
-    const task: Task = {
-      id: uuidv4(),
-      title: taskPartial.title || 'Nueva Tarea',
-      description: taskPartial.description || '',
-      radius: taskPartial.radius || DEFAULT_RADIUS,
-      isCompleted: false,
-      createdAt: Date.now(),
-      location: location,
-      ...taskPartial
-    };
-    addTask(task);
-    setPendingTask(null);
-    setTempLocation(null);
-    setIsSelectingLocation(false);
-    setView(AppView.LIST);
-  };
-
-  const handleMapClick = (lat: number, lng: number) => {
-    if (isSelectingLocation) {
-      setTempLocation({ lat, lng, address: 'Punto seleccionado' });
-    }
-  };
-
-  const handleConfirmLocation = () => {
-    if (isSelectingLocation && pendingTask && tempLocation) {
-      finalizeTaskCreation(pendingTask, tempLocation);
-    }
-  };
 
   const handleUpdateTask = (updatedTask: Task) => {
     updateTask(updatedTask);
@@ -125,7 +45,7 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
         {/* Header */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm px-4 py-3 z-10 flex justify-between items-center transition-colors pt-[env(safe-area-inset-top)]">
+        <header className="bg-white dark:bg-gray-800 shadow-sm px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] z-10 flex justify-between items-center transition-colors">
           <div className="flex items-center gap-2">
             <div className="bg-blue-600 p-2 rounded-lg text-white">
               <Navigation size={20} />
@@ -223,19 +143,14 @@ const App: React.FC = () => {
               {isSelectingLocation && tempLocation && (
                 <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-[1000] flex gap-3 animate-in slide-in-from-bottom-4">
                   <button
-                    onClick={() => {
-                      setIsSelectingLocation(false);
-                      setPendingTask(null);
-                      setTempLocation(null);
-                      setView(AppView.LIST);
-                    }}
+                    onClick={cancelLocation}
                     className="bg-white dark:bg-gray-800 dark:text-white text-gray-700 px-4 py-3 rounded-2xl shadow-xl font-bold border border-gray-200 dark:border-gray-700 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     <X size={20} />
                     Cancelar
                   </button>
                   <button
-                    onClick={handleConfirmLocation}
+                    onClick={confirmLocation}
                     className="bg-blue-600 text-white px-6 py-3 rounded-2xl shadow-xl font-bold flex items-center gap-2 hover:bg-blue-700 active:scale-95 transition-all"
                   >
                     <Check size={20} />
@@ -248,11 +163,11 @@ const App: React.FC = () => {
         </main>
 
         {/* Bottom Navigation */}
-        <nav className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-3 flex justify-around items-center z-20 transition-colors pb-[env(safe-area-inset-bottom)]">
+        <nav className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-around items-center z-20 transition-colors">
           <button
             onClick={() => {
               setView(AppView.LIST);
-              setIsSelectingLocation(false);
+              if (isSelectingLocation) cancelLocation();
             }}
             className={`flex flex-col items-center gap-1 text-xs font-medium ${view === AppView.LIST ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
           >
