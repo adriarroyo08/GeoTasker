@@ -20,3 +20,5 @@ export const COMPLETED_ICON = L.icon({
 
 export const DEFAULT_CENTER = { lat: 40.4168, lng: -3.7038 }; // Madrid by default
 export const DEFAULT_RADIUS = 200; // meters
+
+export const NOTIFICATION_ICON_PATH = '/images/marker-icon.png';
