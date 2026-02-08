@@ -1,16 +1,17 @@
 import L from 'leaflet';
 
 // Fix for default Leaflet markers in React
+// Using local assets for production readiness and offline support
 export const DEFAULT_ICON = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+  iconUrl: '/images/marker-icon.png',
+  shadowUrl: '/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
 
 export const COMPLETED_ICON = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconUrl: '/images/marker-icon-green.png',
+  shadowUrl: '/images/marker-shadow.png', // Using the same shadow is fine
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
