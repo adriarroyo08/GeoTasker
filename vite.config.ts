@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
-          includeAssets: ['icon.svg'],
+          includeAssets: ['icon.svg', 'images/*.png'],
           manifest: {
             name: 'GeoTasker Web',
             short_name: 'GeoTasker',
@@ -35,27 +35,23 @@ export default defineConfig(({ mode }) => {
                 type: 'image/svg+xml',
               }
             ]
-          },
-          workbox: {
-            runtimeCaching: [
-              {
-                urlPattern: /^https:\/\/unpkg\.com\/leaflet.*/i,
-                handler: 'CacheFirst',
-                options: {
-                  cacheName: 'leaflet-cache',
-                  expiration: {
-                    maxEntries: 10,
-                    maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  }
-                }
-              }
-            ]
           }
         })
       ],
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks(id) {
+              if (id.includes('node_modules')) {
+                if (id.includes('react-leaflet')) return 'leaflet-vendor';
+                if (id.includes('leaflet')) return 'leaflet-vendor';
+                if (id.includes('react')) return 'react-vendor';
+                return 'vendor';
+              }
+            }
+          }
+        }
+      },
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)

@@ -38,8 +38,8 @@ export const useGeofencing = (tasks: Task[]) => {
     const title = `📍 ¡Llegaste a tu destino!`;
     const options: any = {
       body: `Estás cerca de: ${task.title}\n${task.description || ''}`,
-      icon: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-      badge: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+      icon: '/images/marker-icon.png',
+      badge: '/images/marker-icon.png',
       tag: `geofence-${task.id}`,
       renotify: true,
       vibrate: [200, 100, 200],
