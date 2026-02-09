@@ -75,14 +75,21 @@ La arquitectura está construida sobre principios modernos de desarrollo web:
 2. Una **API Key de Google Gemini**.
 
 ### Variables de Entorno
-El proyecto requiere que la API Key esté disponible en el proceso de construcción. Asegúrate de configurar `process.env.API_KEY` en tu entorno de desarrollo o despliegue.
+El proyecto requiere una API Key de Google Gemini para las funciones de IA. Copia el archivo de ejemplo y configura tu clave:
 
-### Instalación
+1. Copia `.env.example` a `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+2. Edita `.env` y añade tu clave:
+   ```env
+   GEMINI_API_KEY=tu_api_key_aqui
+   ```
 
-Como este proyecto utiliza módulos ES6 directamente vía CDN/ESM en el navegador para este entorno de demostración, no requiere un `npm install` tradicional de dependencias pesadas, pero en un entorno local estándar:
+### Instalación y Despliegue
 
 1. Clona el repositorio.
-2. Instala dependencias (si usas un bundler como Vite):
+2. Instala dependencias:
    ```bash
    npm install
    ```
@@ -90,6 +97,12 @@ Como este proyecto utiliza módulos ES6 directamente vía CDN/ESM en el navegado
    ```bash
    npm run dev
    ```
+4. Para verificar tipos y construir para producción:
+   ```bash
+   npm run type-check
+   npm run build
+   ```
+   Los archivos listos para producción se generarán en la carpeta `dist/`.
 
 ---
 
