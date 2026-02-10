@@ -1,21 +1,13 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach, Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGeofencing } from './useGeofencing';
 import { Task } from '../types';
+import { useNotifications } from './useNotifications';
 
-// Mock Notification
-const notificationMock = vi.fn();
-const requestPermissionMock = vi.fn().mockResolvedValue('granted');
-Object.defineProperty(window, 'Notification', {
-  value: class Notification {
-    static permission = 'granted';
-    static requestPermission = requestPermissionMock;
-    constructor(title: string, options: any) {
-      notificationMock(title, options);
-    }
-  },
-  writable: true
-});
+// Mock useNotifications
+vi.mock('./useNotifications', () => ({
+  useNotifications: vi.fn()
+}));
 
 // Mock Geolocation
 const watchPositionMock = vi.fn();
@@ -44,12 +36,19 @@ describe('useGeofencing', () => {
     }
   ];
 
+  const requestNotificationPermissionMock = vi.fn();
+  const triggerNotificationMock = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     watchPositionMock.mockReturnValue(123); // Mock watch ID
-    // @ts-ignore
-    window.Notification.permission = 'granted';
+
+    // Setup mock implementation for useNotifications
+    (useNotifications as Mock).mockReturnValue({
+      requestNotificationPermission: requestNotificationPermissionMock,
+      triggerNotification: triggerNotificationMock
+    });
   });
 
   afterEach(() => {
@@ -57,10 +56,8 @@ describe('useGeofencing', () => {
   });
 
   it('should initialize and request notification permission', () => {
-    // @ts-ignore
-    window.Notification.permission = 'default';
     renderHook(() => useGeofencing([]));
-    expect(requestPermissionMock).toHaveBeenCalled();
+    expect(requestNotificationPermissionMock).toHaveBeenCalled();
   });
 
   it('should update user location on success', () => {
@@ -93,7 +90,7 @@ describe('useGeofencing', () => {
       } as GeolocationPosition);
     });
 
-    expect(notificationMock).toHaveBeenCalledWith(
+    expect(triggerNotificationMock).toHaveBeenCalledWith(
       expect.stringContaining('Llegaste'),
       expect.objectContaining({ body: expect.stringContaining('Pharmacy') })
     );
@@ -111,7 +108,7 @@ describe('useGeofencing', () => {
       } as GeolocationPosition);
     });
 
-    expect(notificationMock).not.toHaveBeenCalled();
+    expect(triggerNotificationMock).not.toHaveBeenCalled();
   });
 
   it('should handle geolocation errors and fallback to low accuracy', () => {
