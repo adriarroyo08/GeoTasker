@@ -88,7 +88,7 @@ export const useGeofencing = (tasks: Task[]) => {
 
   // Setup and manage location watcher
   useEffect(() => {
-    requestNotificationPermission();
+    // Permission is now requested on demand
 
     if (!navigator.geolocation) {
       setLocationError("Geolocalización no soportada en este navegador.");
@@ -162,11 +162,12 @@ export const useGeofencing = (tasks: Task[]) => {
       }
     };
     // Removed userLocation from deps to prevent restart loop
-  }, [requestNotificationPermission, useHighAccuracy]);
+  }, [useHighAccuracy]);
 
   return { 
     userLocation, 
     locationError, 
-    updateLocation: (lat: number, lng: number) => setUserLocation({ lat, lng }) 
+    updateLocation: (lat: number, lng: number) => setUserLocation({ lat, lng }),
+    requestNotificationPermission
   };
 };

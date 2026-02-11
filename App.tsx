@@ -31,7 +31,12 @@ const App: React.FC = () => {
     cancelLocation
   } = useSmartTask({ addTask, setView });
 
-  const { userLocation, locationError, updateLocation } = useGeofencing(tasks);
+  const { userLocation, locationError, updateLocation, requestNotificationPermission } = useGeofencing(tasks);
+
+  const handleSmartAddWithPermission = async () => {
+    await requestNotificationPermission();
+    handleSmartAdd();
+  };
 
   const handleUpdateTask = (updatedTask: Task) => {
     updateTask(updatedTask);
@@ -80,10 +85,10 @@ const App: React.FC = () => {
                   onChange={(e) => setNewTaskInput(e.target.value)}
                   placeholder="Ej: Comprar leche en Walmart..."
                   className="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSmartAdd()}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSmartAddWithPermission()}
                 />
                 <button
-                  onClick={handleSmartAdd}
+                  onClick={handleSmartAddWithPermission}
                   disabled={isProcessing || !newTaskInput.trim()}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                 >
@@ -135,7 +140,7 @@ const App: React.FC = () => {
             
             {/* Location Confirmation Overlay */}
             {isSelectingLocation && tempLocation && (
-              <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-[1000] flex gap-3 animate-in slide-in-from-bottom-4">
+              <div className="absolute bottom-28 left-1/2 transform -translate-x-1/2 z-[1000] flex gap-3 animate-in slide-in-from-bottom-4">
                 <button
                   onClick={cancelLocation}
                   className="bg-white dark:bg-gray-800 dark:text-white text-gray-700 px-4 py-3 rounded-2xl shadow-xl font-bold border border-gray-200 dark:border-gray-700 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700"
