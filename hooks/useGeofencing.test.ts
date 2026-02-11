@@ -56,10 +56,19 @@ describe('useGeofencing', () => {
     vi.useRealTimers();
   });
 
-  it('should initialize and request notification permission', () => {
+  it('should allow manual notification permission request', async () => {
     // @ts-ignore
     window.Notification.permission = 'default';
-    renderHook(() => useGeofencing([]));
+    const { result } = renderHook(() => useGeofencing([]));
+
+    // Should NOT call on mount
+    expect(requestPermissionMock).not.toHaveBeenCalled();
+
+    // Call manually
+    await act(async () => {
+      await result.current.requestNotificationPermission();
+    });
+
     expect(requestPermissionMock).toHaveBeenCalled();
   });
 
