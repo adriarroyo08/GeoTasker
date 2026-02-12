@@ -2,20 +2,13 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGeofencing } from './useGeofencing';
 import { Task } from '../types';
+import * as notifications from '../utils/notifications';
 
-// Mock Notification
-const notificationMock = vi.fn();
-const requestPermissionMock = vi.fn().mockResolvedValue('granted');
-Object.defineProperty(window, 'Notification', {
-  value: class Notification {
-    static permission = 'granted';
-    static requestPermission = requestPermissionMock;
-    constructor(title: string, options: any) {
-      notificationMock(title, options);
-    }
-  },
-  writable: true
-});
+// Mock notifications utility
+vi.mock('../utils/notifications', () => ({
+  requestNotificationPermission: vi.fn(),
+  sendTaskNotification: vi.fn()
+}));
 
 // Mock Geolocation
 const watchPositionMock = vi.fn();
@@ -48,8 +41,6 @@ describe('useGeofencing', () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     watchPositionMock.mockReturnValue(123); // Mock watch ID
-    // @ts-ignore
-    window.Notification.permission = 'granted';
   });
 
   afterEach(() => {
@@ -57,10 +48,8 @@ describe('useGeofencing', () => {
   });
 
   it('should initialize and request notification permission', () => {
-    // @ts-ignore
-    window.Notification.permission = 'default';
     renderHook(() => useGeofencing([]));
-    expect(requestPermissionMock).toHaveBeenCalled();
+    expect(notifications.requestNotificationPermission).toHaveBeenCalled();
   });
 
   it('should update user location on success', () => {
@@ -93,9 +82,8 @@ describe('useGeofencing', () => {
       } as GeolocationPosition);
     });
 
-    expect(notificationMock).toHaveBeenCalledWith(
-      expect.stringContaining('Llegaste'),
-      expect.objectContaining({ body: expect.stringContaining('Pharmacy') })
+    expect(notifications.sendTaskNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Pharmacy' })
     );
   });
 
@@ -111,7 +99,7 @@ describe('useGeofencing', () => {
       } as GeolocationPosition);
     });
 
-    expect(notificationMock).not.toHaveBeenCalled();
+    expect(notifications.sendTaskNotification).not.toHaveBeenCalled();
   });
 
   it('should handle geolocation errors and fallback to low accuracy', () => {
