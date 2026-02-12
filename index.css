@@ -3,3 +3,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Global styles */
+html, body {
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent text selection on app UI elements generally, allow on inputs */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}

@@ -2,7 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { registerSW } from 'virtual:pwa-register';
 import 'leaflet/dist/leaflet.css';
+
+// Register PWA Service Worker
+if ('serviceWorker' in navigator) {
+  registerSW({ immediate: true });
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
