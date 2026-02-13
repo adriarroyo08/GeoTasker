@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useSmartTask } from './useSmartTask';
-import { AppView, Task } from '../types';
+import { AppView } from '../types';
 import * as geminiService from '../services/gemini';
 
 // Mock gemini service

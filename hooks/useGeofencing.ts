@@ -23,6 +23,11 @@ export const useGeofencing = (tasks: Task[]) => {
   
   const watchIdRef = useRef<number | null>(null);
   const lastUpdateRef = useRef<number>(0);
+  const userLocationRef = useRef(userLocation);
+
+  useEffect(() => {
+    userLocationRef.current = userLocation;
+  }, [userLocation]);
 
   // Function to request notification permission
   const requestNotificationPermission = useCallback(async () => {
@@ -36,6 +41,7 @@ export const useGeofencing = (tasks: Task[]) => {
     if (Notification.permission !== 'granted') return;
 
     const title = `📍 ¡Llegaste a tu destino!`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const options: any = {
       body: `Estás cerca de: ${task.title}\n${task.description || ''}`,
       icon: '/images/marker-icon.png',
@@ -91,7 +97,7 @@ export const useGeofencing = (tasks: Task[]) => {
     requestNotificationPermission();
 
     if (!navigator.geolocation) {
-      setLocationError("Geolocalización no soportada en este navegador.");
+      setTimeout(() => setLocationError("Geolocalización no soportada en este navegador."), 0);
       return;
     }
 
@@ -118,7 +124,7 @@ export const useGeofencing = (tasks: Task[]) => {
       }
 
       // Only set UI error if we really don't have a location yet
-      if (!userLocation) {
+      if (!userLocationRef.current) {
         let msg = "No se pudo obtener la ubicación.";
         if (error.code === 1) msg = "Permiso de ubicación denegado.";
         if (error.code === 3) msg = "Tiempo de espera agotado. Muévete a un área despejada.";

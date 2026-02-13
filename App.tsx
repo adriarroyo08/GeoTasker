@@ -6,9 +6,10 @@ import { useGeofencing } from './hooks/useGeofencing';
 import { useTaskManager } from './hooks/useTaskManager';
 import { useTheme } from './hooks/useTheme';
 import { useSmartTask } from './hooks/useSmartTask';
-import { MapView } from './components/MapView';
 import { TaskCard } from './components/TaskCard';
 import { EditTaskModal } from './components/EditTaskModal';
+
+const MapView = React.lazy(() => import('./components/MapView'));
 
 const App: React.FC = () => {
   // State
@@ -93,7 +94,7 @@ const App: React.FC = () => {
               </div>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 flex items-center gap-1">
                 <Mic size={12} />
-                Intenta: "Recordarme sacar dinero cuando pase por el banco" (Gemini AI Powered)
+                Intenta: &quot;Recordarme sacar dinero cuando pase por el banco&quot; (Gemini AI Powered)
               </p>
             </div>
 
@@ -122,16 +123,18 @@ const App: React.FC = () => {
 
         {view === AppView.MAP && (
           <div className="flex-1 relative">
-            <MapView 
-              tasks={tasks} 
-              userLocation={userLocation} 
-              onMapClick={handleMapClick}
-              selectingLocation={isSelectingLocation}
-              onUserLocationUpdate={updateLocation}
-              previewLocation={tempLocation}
-              previewRadius={pendingTask?.radius}
-              isDarkMode={darkMode}
-            />
+            <React.Suspense fallback={<div className="h-full w-full flex items-center justify-center bg-gray-100 dark:bg-gray-900"><Loader2 className="animate-spin text-blue-600" size={48} /></div>}>
+              <MapView
+                tasks={tasks}
+                userLocation={userLocation}
+                onMapClick={handleMapClick}
+                selectingLocation={isSelectingLocation}
+                onUserLocationUpdate={updateLocation}
+                previewLocation={tempLocation}
+                previewRadius={pendingTask?.radius}
+                isDarkMode={darkMode}
+              />
+            </React.Suspense>
             
             {/* Location Confirmation Overlay */}
             {isSelectingLocation && tempLocation && (
@@ -179,12 +182,14 @@ const App: React.FC = () => {
       </nav>
 
       {/* Edit Modal */}
-      <EditTaskModal 
-        task={editingTask} 
-        isOpen={!!editingTask} 
-        onClose={() => setEditingTask(null)} 
-        onSave={handleUpdateTask}
-      />
+      {editingTask && (
+        <EditTaskModal
+          key={editingTask.id}
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+          onSave={handleUpdateTask}
+        />
+      )}
     </div>
   );
 };

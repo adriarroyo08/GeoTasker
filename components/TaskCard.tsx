@@ -1,8 +1,6 @@
 import React from 'react';
 import { Task } from '../types';
 import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil } from 'lucide-react';
-import { formatDistance } from '../utils/geo';
-
 interface TaskCardProps {
   task: Task;
   userLat?: number;
@@ -13,11 +11,6 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDelete, onEdit }) => {
-  let distanceStr = '';
-  if (task.location && userLat !== undefined && userLng !== undefined) {
-    // Distance calculation logic if needed for display
-  }
-
   const handleDelete = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
       onDelete(task.id);
