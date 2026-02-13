@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-le
 import { Task, GeoLocation } from '../types';
 import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON } from '../constants';
 import { Locate, Loader2 } from 'lucide-react';
-import L from 'leaflet';
 
 interface MapViewProps {
   tasks: Task[];
@@ -214,3 +213,5 @@ export const MapView: React.FC<MapViewProps> = ({
     </div>
   );
 };
+
+export default MapView;

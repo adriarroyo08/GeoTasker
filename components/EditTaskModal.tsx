@@ -1,28 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Task } from '../types';
 import { X, Save, MapPin } from 'lucide-react';
 
 interface EditTaskModalProps {
-  task: Task | null;
-  isOpen: boolean;
+  task: Task;
   onClose: () => void;
   onSave: (updatedTask: Task) => void;
 }
 
-export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onClose, onSave }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [radius, setRadius] = useState(200);
-
-  useEffect(() => {
-    if (task) {
-      setTitle(task.title);
-      setDescription(task.description);
-      setRadius(task.radius || 200);
-    }
-  }, [task]);
-
-  if (!isOpen || !task) return null;
+export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, onClose, onSave }) => {
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description);
+  const [radius, setRadius] = useState(task.radius || 200);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

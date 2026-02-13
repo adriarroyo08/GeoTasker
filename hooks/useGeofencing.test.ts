@@ -10,6 +10,7 @@ Object.defineProperty(window, 'Notification', {
   value: class Notification {
     static permission = 'granted';
     static requestPermission = requestPermissionMock;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(title: string, options: any) {
       notificationMock(title, options);
     }
@@ -48,7 +49,7 @@ describe('useGeofencing', () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     watchPositionMock.mockReturnValue(123); // Mock watch ID
-    // @ts-ignore
+    // @ts-expect-error - mocking read-only property
     window.Notification.permission = 'granted';
   });
 
@@ -57,7 +58,7 @@ describe('useGeofencing', () => {
   });
 
   it('should initialize and request notification permission', () => {
-    // @ts-ignore
+    // @ts-expect-error - mocking read-only property
     window.Notification.permission = 'default';
     renderHook(() => useGeofencing([]));
     expect(requestPermissionMock).toHaveBeenCalled();
