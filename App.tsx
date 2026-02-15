@@ -6,8 +6,9 @@ import { useGeofencing } from './hooks/useGeofencing';
 import { useTaskManager } from './hooks/useTaskManager';
 import { useTheme } from './hooks/useTheme';
 import { useSmartTask } from './hooks/useSmartTask';
-import { MapView } from './components/MapView';
 import { TaskCard } from './components/TaskCard';
+
+const MapView = React.lazy(() => import('./components/MapView').then(module => ({ default: module.MapView })));
 import { EditTaskModal } from './components/EditTaskModal';
 
 const App: React.FC = () => {
@@ -39,7 +40,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
+    <div className="flex flex-col h-[100dvh] bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] z-10 flex justify-between items-center transition-colors">
         <div className="flex items-center gap-2">
@@ -122,16 +123,18 @@ const App: React.FC = () => {
 
         {view === AppView.MAP && (
           <div className="flex-1 relative">
-            <MapView 
-              tasks={tasks} 
-              userLocation={userLocation} 
-              onMapClick={handleMapClick}
-              selectingLocation={isSelectingLocation}
-              onUserLocationUpdate={updateLocation}
-              previewLocation={tempLocation}
-              previewRadius={pendingTask?.radius}
-              isDarkMode={darkMode}
-            />
+            <React.Suspense fallback={<div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" size={32} /></div>}>
+              <MapView
+                tasks={tasks}
+                userLocation={userLocation}
+                onMapClick={handleMapClick}
+                selectingLocation={isSelectingLocation}
+                onUserLocationUpdate={updateLocation}
+                previewLocation={tempLocation}
+                previewRadius={pendingTask?.radius}
+                isDarkMode={darkMode}
+              />
+            </React.Suspense>
             
             {/* Location Confirmation Overlay */}
             {isSelectingLocation && tempLocation && (

@@ -3,3 +3,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Global styles */
+body {
+  overscroll-behavior-y: none;
+}
