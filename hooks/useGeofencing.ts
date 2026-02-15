@@ -112,7 +112,6 @@ export const useGeofencing = (tasks: Task[]) => {
       
       // If timeout (3) or unavailable (2) and using high accuracy, try fallback
       if ((error.code === 3 || error.code === 2) && useHighAccuracy) {
-        console.log("High accuracy failed, falling back to low accuracy...");
         setUseHighAccuracy(false);
         return;
       }
@@ -137,8 +136,6 @@ export const useGeofencing = (tasks: Task[]) => {
       if (!isHidden && useHighAccuracy) {
         options = HIGH_ACCURACY_OPTIONS;
       }
-      
-      console.log(`[GeoTasker] Tracker started. Hidden: ${isHidden}, HighAcc: ${options.enableHighAccuracy}`);
       
       watchIdRef.current = navigator.geolocation.watchPosition(
         handleSuccess,

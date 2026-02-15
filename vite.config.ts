@@ -19,10 +19,27 @@ export default defineConfig(({ mode }) => {
             name: 'GeoTasker Web',
             short_name: 'GeoTasker',
             description: 'Gestión de tareas con recordatorios basados en ubicación e IA.',
+            id: '/',
+            start_url: '/',
+            scope: '/',
             theme_color: '#ffffff',
             background_color: '#ffffff',
             display: 'standalone',
             orientation: 'portrait',
+            screenshots: [
+              {
+                src: 'images/screenshot-mobile-1.png',
+                sizes: '375x812',
+                type: 'image/png',
+                label: 'GeoTasker List'
+              },
+              {
+                src: 'images/screenshot-mobile-2.png',
+                sizes: '375x812',
+                type: 'image/png',
+                label: 'GeoTasker Map'
+              }
+            ],
             icons: [
               {
                 src: 'icon.svg',
