@@ -3,3 +3,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Global styles */
+html, body, #root {
+  height: 100%;
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}

@@ -17,12 +17,19 @@ const LOW_ACCURACY_OPTIONS: PositionOptions = {
 
 export const useGeofencing = (tasks: Task[]) => {
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(
+    !navigator.geolocation ? "Geolocalización no soportada en este navegador." : null
+  );
   const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(new Set());
   const [useHighAccuracy, setUseHighAccuracy] = useState(true);
   
+  const userLocationRef = useRef<GeoLocation | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const lastUpdateRef = useRef<number>(0);
+
+  useEffect(() => {
+    userLocationRef.current = userLocation;
+  }, [userLocation]);
 
   // Function to request notification permission
   const requestNotificationPermission = useCallback(async () => {
@@ -36,7 +43,7 @@ export const useGeofencing = (tasks: Task[]) => {
     if (Notification.permission !== 'granted') return;
 
     const title = `📍 ¡Llegaste a tu destino!`;
-    const options: any = {
+    const options: NotificationOptions & { vibrate?: number[] } = {
       body: `Estás cerca de: ${task.title}\n${task.description || ''}`,
       icon: '/images/marker-icon.png',
       badge: '/images/marker-icon.png',
@@ -90,10 +97,7 @@ export const useGeofencing = (tasks: Task[]) => {
   useEffect(() => {
     requestNotificationPermission();
 
-    if (!navigator.geolocation) {
-      setLocationError("Geolocalización no soportada en este navegador.");
-      return;
-    }
+    if (!navigator.geolocation) return;
 
     const handleSuccess = (position: GeolocationPosition) => {
       const now = Date.now();
@@ -112,13 +116,12 @@ export const useGeofencing = (tasks: Task[]) => {
       
       // If timeout (3) or unavailable (2) and using high accuracy, try fallback
       if ((error.code === 3 || error.code === 2) && useHighAccuracy) {
-        console.log("High accuracy failed, falling back to low accuracy...");
         setUseHighAccuracy(false);
         return;
       }
 
       // Only set UI error if we really don't have a location yet
-      if (!userLocation) {
+      if (!userLocationRef.current) {
         let msg = "No se pudo obtener la ubicación.";
         if (error.code === 1) msg = "Permiso de ubicación denegado.";
         if (error.code === 3) msg = "Tiempo de espera agotado. Muévete a un área despejada.";
@@ -137,8 +140,6 @@ export const useGeofencing = (tasks: Task[]) => {
       if (!isHidden && useHighAccuracy) {
         options = HIGH_ACCURACY_OPTIONS;
       }
-      
-      console.log(`[GeoTasker] Tracker started. Hidden: ${isHidden}, HighAcc: ${options.enableHighAccuracy}`);
       
       watchIdRef.current = navigator.geolocation.watchPosition(
         handleSuccess,
