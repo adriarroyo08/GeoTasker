@@ -39,7 +39,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
+    <div className="flex flex-col h-[100dvh] bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] z-10 flex justify-between items-center transition-colors">
         <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ const App: React.FC = () => {
               </div>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 flex items-center gap-1">
                 <Mic size={12} />
-                Intenta: "Recordarme sacar dinero cuando pase por el banco" (Gemini AI Powered)
+                Intenta: &quot;Recordarme sacar dinero cuando pase por el banco&quot; (Gemini AI Powered)
               </p>
             </div>
 
@@ -179,12 +179,15 @@ const App: React.FC = () => {
       </nav>
 
       {/* Edit Modal */}
-      <EditTaskModal 
-        task={editingTask} 
-        isOpen={!!editingTask} 
-        onClose={() => setEditingTask(null)} 
-        onSave={handleUpdateTask}
-      />
+      {editingTask && (
+        <EditTaskModal
+          key={editingTask.id}
+          task={editingTask}
+          isOpen={true}
+          onClose={() => setEditingTask(null)}
+          onSave={handleUpdateTask}
+        />
+      )}
     </div>
   );
 };
