@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => {
           registerType: 'autoUpdate',
           includeAssets: ['icon.svg', 'images/*.png'],
           manifest: {
+            id: '/',
             name: 'GeoTasker Web',
             short_name: 'GeoTasker',
             description: 'Gestión de tareas con recordatorios basados en ubicación e IA.',
@@ -23,18 +24,28 @@ export default defineConfig(({ mode }) => {
             background_color: '#ffffff',
             display: 'standalone',
             orientation: 'portrait',
+            start_url: '/',
+            scope: '/',
+            categories: ['productivity', 'utilities', 'navigation'],
             icons: [
               {
                 src: 'icon.svg',
                 sizes: '192x192',
                 type: 'image/svg+xml',
+                purpose: 'any maskable'
               },
               {
                 src: 'icon.svg',
                 sizes: '512x512',
                 type: 'image/svg+xml',
+                purpose: 'any maskable'
               }
             ]
+          },
+          workbox: {
+            cleanupOutdatedCaches: true,
+            clientsClaim: true,
+            skipWaiting: true
           }
         })
       ],
