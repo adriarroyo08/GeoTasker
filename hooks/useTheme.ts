@@ -10,12 +10,23 @@ export const useTheme = () => {
   });
 
   useEffect(() => {
+    const root = document.documentElement;
+    // Select the meta tag or create it if it doesn't exist (robustness)
+    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement('meta');
+      metaThemeColor.setAttribute('name', 'theme-color');
+      document.head.appendChild(metaThemeColor);
+    }
+
     if (darkMode) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
       localStorage.setItem('theme', 'dark');
+      metaThemeColor.setAttribute('content', '#111827');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
       localStorage.setItem('theme', 'light');
+      metaThemeColor.setAttribute('content', '#ffffff');
     }
   }, [darkMode]);
 
