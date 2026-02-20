@@ -23,16 +23,22 @@ export default defineConfig(({ mode }) => {
             background_color: '#ffffff',
             display: 'standalone',
             orientation: 'portrait',
+            scope: '/',
+            start_url: '/',
+            id: '/',
+            categories: ['productivity', 'utilities', 'navigation'],
             icons: [
               {
                 src: 'icon.svg',
                 sizes: '192x192',
                 type: 'image/svg+xml',
+                purpose: 'any maskable'
               },
               {
                 src: 'icon.svg',
                 sizes: '512x512',
                 type: 'image/svg+xml',
+                purpose: 'any maskable'
               }
             ]
           }

@@ -180,6 +180,7 @@ const App: React.FC = () => {
 
       {/* Edit Modal */}
       <EditTaskModal 
+        key={editingTask ? editingTask.id : 'modal'}
         task={editingTask} 
         isOpen={!!editingTask} 
         onClose={() => setEditingTask(null)} 
