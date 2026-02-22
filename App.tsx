@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, List, Map as MapIcon, Mic, Loader2, Navigation, Check, X, Moon, Sun } from 'lucide-react';
+import { Plus, List, Map as MapIcon, Mic, Loader2, Navigation, Check, X, Moon, Sun, Bell } from 'lucide-react';
 
 import { AppView, Task } from './types';
 import { useGeofencing } from './hooks/useGeofencing';
@@ -28,10 +28,12 @@ const App: React.FC = () => {
     tempLocation,
     handleMapClick,
     confirmLocation,
-    cancelLocation
+    cancelLocation,
+    error: smartTaskError,
+    clearError
   } = useSmartTask({ addTask, setView });
 
-  const { userLocation, locationError, updateLocation } = useGeofencing(tasks);
+  const { userLocation, locationError, updateLocation, notificationPermission, requestPermission } = useGeofencing(tasks);
 
   const handleUpdateTask = (updatedTask: Task) => {
     updateTask(updatedTask);
@@ -54,6 +56,15 @@ const App: React.FC = () => {
             <div className="text-xs text-red-500 max-w-[150px] leading-tight text-right hidden sm:block">
               {locationError}
             </div>
+          )}
+          {notificationPermission !== 'granted' && (
+            <button
+              onClick={requestPermission}
+              className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+              title="Activar notificaciones"
+            >
+              <Bell size={20} />
+            </button>
           )}
           <button 
             onClick={toggleTheme}
@@ -95,6 +106,12 @@ const App: React.FC = () => {
                 <Mic size={12} />
                 Intenta: "Recordarme sacar dinero cuando pase por el banco" (Gemini AI Powered)
               </p>
+              {smartTaskError && (
+                <div className="mt-2 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-2 rounded-lg flex justify-between items-center animate-in fade-in">
+                  <span>{smartTaskError}</span>
+                  <button onClick={clearError} className="text-red-700 dark:text-red-400 hover:text-red-900"><X size={16}/></button>
+                </div>
+              )}
             </div>
 
             {/* Task List */}
