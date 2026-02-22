@@ -56,10 +56,16 @@ describe('useGeofencing', () => {
     vi.useRealTimers();
   });
 
-  it('should initialize and request notification permission', () => {
+  it('should initialize and expose requestPermission function', () => {
     // @ts-ignore
     window.Notification.permission = 'default';
-    renderHook(() => useGeofencing([]));
+    const { result } = renderHook(() => useGeofencing([]));
+    expect(requestPermissionMock).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.requestPermission();
+    });
+
     expect(requestPermissionMock).toHaveBeenCalled();
   });
 

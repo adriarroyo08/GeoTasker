@@ -10,12 +10,15 @@ export const useTheme = () => {
   });
 
   useEffect(() => {
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (darkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
+      metaThemeColor?.setAttribute('content', '#111827');
     } else {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
+      metaThemeColor?.setAttribute('content', '#ffffff');
     }
   }, [darkMode]);
 

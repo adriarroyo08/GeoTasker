@@ -24,12 +24,18 @@ export const useGeofencing = (tasks: Task[]) => {
   const watchIdRef = useRef<number | null>(null);
   const lastUpdateRef = useRef<number>(0);
 
-  // Function to request notification permission
-  const requestNotificationPermission = useCallback(async () => {
-    if (!('Notification' in window)) return;
-    if (Notification.permission === 'default') {
-      await Notification.requestPermission();
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      return Notification.permission;
     }
+    return 'default';
+  });
+
+  // Function to request notification permission
+  const requestPermission = useCallback(async () => {
+    if (!('Notification' in window)) return;
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
   }, []);
 
   const triggerNotification = async (task: Task) => {
@@ -88,8 +94,6 @@ export const useGeofencing = (tasks: Task[]) => {
 
   // Setup and manage location watcher
   useEffect(() => {
-    requestNotificationPermission();
-
     if (!navigator.geolocation) {
       setLocationError("Geolocalización no soportada en este navegador.");
       return;
@@ -162,11 +166,13 @@ export const useGeofencing = (tasks: Task[]) => {
       }
     };
     // Removed userLocation from deps to prevent restart loop
-  }, [requestNotificationPermission, useHighAccuracy]);
+  }, [useHighAccuracy]);
 
   return { 
     userLocation, 
     locationError, 
-    updateLocation: (lat: number, lng: number) => setUserLocation({ lat, lng }) 
+    updateLocation: (lat: number, lng: number) => setUserLocation({ lat, lng }),
+    notificationPermission,
+    requestPermission
   };
 };
