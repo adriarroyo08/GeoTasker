@@ -15,7 +15,13 @@ export default defineConfig(({ mode }) => {
         VitePWA({
           registerType: 'autoUpdate',
           includeAssets: ['icon.svg', 'images/*.png'],
+          workbox: {
+            globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+          },
           manifest: {
+            id: '/',
+            start_url: '/',
+            scope: '/',
             name: 'GeoTasker Web',
             short_name: 'GeoTasker',
             description: 'Gestión de tareas con recordatorios basados en ubicación e IA.',
@@ -28,11 +34,13 @@ export default defineConfig(({ mode }) => {
                 src: 'icon.svg',
                 sizes: '192x192',
                 type: 'image/svg+xml',
+                purpose: 'any maskable'
               },
               {
                 src: 'icon.svg',
                 sizes: '512x512',
                 type: 'image/svg+xml',
+                purpose: 'any maskable'
               }
             ]
           }
