@@ -16,15 +16,6 @@ interface MapViewProps {
   isDarkMode?: boolean;
 }
 
-// Helper to update map view when user location changes
-const RecenterMap: React.FC<{ center: [number, number] }> = ({ center }) => {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, map.getZoom());
-  }, [center, map]);
-  return null;
-};
-
 // Helper to handle clicks
 const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void }> = ({ onClick }) => {
   const map = useMap();
@@ -134,12 +125,9 @@ export const MapView: React.FC<MapViewProps> = ({
         />
 
         {userLocation && (
-          <>
-            <Marker position={[userLocation.lat, userLocation.lng]} icon={DEFAULT_ICON}>
-              <Popup>Tu ubicación actual</Popup>
-            </Marker>
-            <RecenterMap center={[userLocation.lat, userLocation.lng]} />
-          </>
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={DEFAULT_ICON}>
+            <Popup>Tu ubicación actual</Popup>
+          </Marker>
         )}
 
         {/* Existing Tasks */}
