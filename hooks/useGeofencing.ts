@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { GeoLocation, Task } from '../types';
 import { calculateDistance } from '../utils/geo';
+import { requestNotificationPermission, sendNotification } from '../utils/notifications';
 
 // Strategies for location tracking
 const HIGH_ACCURACY_OPTIONS: PositionOptions = {
@@ -24,43 +25,6 @@ export const useGeofencing = (tasks: Task[]) => {
   const watchIdRef = useRef<number | null>(null);
   const lastUpdateRef = useRef<number>(0);
 
-  // Function to request notification permission
-  const requestNotificationPermission = useCallback(async () => {
-    if (!('Notification' in window)) return;
-    if (Notification.permission === 'default') {
-      await Notification.requestPermission();
-    }
-  }, []);
-
-  const triggerNotification = async (task: Task) => {
-    if (Notification.permission !== 'granted') return;
-
-    const title = `📍 ¡Llegaste a tu destino!`;
-    const options: any = {
-      body: `Estás cerca de: ${task.title}\n${task.description || ''}`,
-      icon: '/images/marker-icon.png',
-      badge: '/images/marker-icon.png',
-      tag: `geofence-${task.id}`,
-      renotify: true,
-      vibrate: [200, 100, 200],
-      data: { taskId: task.id }
-    };
-
-    try {
-      if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.ready;
-        if (registration && 'showNotification' in registration) {
-          await registration.showNotification(title, options);
-          return;
-        }
-      }
-    } catch (err) {
-      console.warn('SW notification failed, falling back to window Notification', err);
-    }
-
-    new Notification(title, options);
-  };
-
   // Monitor location and check geofences
   useEffect(() => {
     if (!userLocation) return;
@@ -76,7 +40,7 @@ export const useGeofencing = (tasks: Task[]) => {
       );
 
       if (distance <= task.radius) {
-        triggerNotification(task);
+        sendNotification(task);
         setTriggeredTasks(prev => {
           const next = new Set(prev);
           next.add(task.id);
@@ -162,7 +126,7 @@ export const useGeofencing = (tasks: Task[]) => {
       }
     };
     // Removed userLocation from deps to prevent restart loop
-  }, [requestNotificationPermission, useHighAccuracy]);
+  }, [useHighAccuracy]);
 
   return { 
     userLocation, 
