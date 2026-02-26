@@ -19,6 +19,9 @@ export default defineConfig(({ mode }) => {
             name: 'GeoTasker Web',
             short_name: 'GeoTasker',
             description: 'Gestión de tareas con recordatorios basados en ubicación e IA.',
+            id: '/',
+            start_url: '/',
+            scope: '/',
             theme_color: '#ffffff',
             background_color: '#ffffff',
             display: 'standalone',
@@ -28,11 +31,13 @@ export default defineConfig(({ mode }) => {
                 src: 'icon.svg',
                 sizes: '192x192',
                 type: 'image/svg+xml',
+                purpose: 'any maskable'
               },
               {
                 src: 'icon.svg',
                 sizes: '512x512',
                 type: 'image/svg+xml',
+                purpose: 'any maskable'
               }
             ]
           }
