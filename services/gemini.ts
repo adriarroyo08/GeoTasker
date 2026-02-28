@@ -9,10 +9,12 @@ export const parseTaskWithGemini = async (input: string): Promise<{ title: strin
   try {
     if (apiKey === "dummy_key") throw new Error("No API Key");
 
+    const sanitizedInput = input.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Analiza la siguiente entrada de usuario para una aplicación de tareas y extrae la información en formato JSON.
-      Entrada: "${input}"
+      Entrada: "${sanitizedInput}"
       Si el usuario menciona un lugar, extráelo en "suggestedLocationName". Si no, déjalo vacío.
       Devuelve un título conciso y una descripción si hay detalles extra.`,
       config: {
