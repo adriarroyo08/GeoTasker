@@ -1,7 +1,7 @@
 import React from 'react';
 import { Task } from '../types';
 import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil } from 'lucide-react';
-import { formatDistance } from '../utils/geo';
+import { calculateDistance, formatDistance } from '../utils/geo';
 
 interface TaskCardProps {
   task: Task;
@@ -15,7 +15,8 @@ interface TaskCardProps {
 export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDelete, onEdit }) => {
   let distanceStr = '';
   if (task.location && userLat !== undefined && userLng !== undefined) {
-    // Distance calculation logic if needed for display
+    const dist = calculateDistance(userLat, userLng, task.location.lat, task.location.lng);
+    distanceStr = formatDistance(dist);
   }
 
   const handleDelete = () => {
@@ -63,7 +64,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
                   {task.location.address || 'Ubicación fijada'}
                   {userLat && userLng && task.location && (
                     <span className="ml-1 opacity-75">
-                      (Radio: {task.radius}m)
+                      (Radio: {task.radius}m{distanceStr ? ` - a ${distanceStr}` : ''})
                     </span>
                   )}
                 </span>
