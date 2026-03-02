@@ -29,6 +29,12 @@ def verify_pwa():
             status_bar = page.locator('meta[name="apple-mobile-web-app-status-bar-style"]').get_attribute("content")
             print(f"Status Bar: {status_bar}")
 
+            apple_touch_icon = page.locator('link[rel="apple-touch-icon"]').get_attribute("href")
+            print(f"Apple Touch Icon: {apple_touch_icon}")
+
+            theme_color = page.locator('meta[name="theme-color"]').get_attribute("content")
+            print(f"Theme Color: {theme_color}")
+
             # Verify Manifest Link
             manifest = page.locator('link[rel="manifest"]').get_attribute("href")
             print(f"Manifest: {manifest}")
