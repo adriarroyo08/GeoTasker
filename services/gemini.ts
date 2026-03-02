@@ -5,14 +5,20 @@ import { GoogleGenAI, Type } from "@google/genai";
 const apiKey = process.env.API_KEY || "dummy_key";
 const ai = new GoogleGenAI({ apiKey });
 
+export const sanitizeInput = (input: string): string => {
+  return input.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+};
+
 export const parseTaskWithGemini = async (input: string): Promise<{ title: string; description: string; hasLocation: boolean; suggestedLocationName?: string }> => {
   try {
     if (apiKey === "dummy_key") throw new Error("No API Key");
 
+    const sanitizedInput = sanitizeInput(input);
+
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Analiza la siguiente entrada de usuario para una aplicación de tareas y extrae la información en formato JSON.
-      Entrada: "${input}"
+      Entrada: "${sanitizedInput}"
       Si el usuario menciona un lugar, extráelo en "suggestedLocationName". Si no, déjalo vacío.
       Devuelve un título conciso y una descripción si hay detalles extra.`,
       config: {
