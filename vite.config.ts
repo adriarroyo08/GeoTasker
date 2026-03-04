@@ -14,6 +14,9 @@ export default defineConfig(({ mode }) => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
+          workbox: {
+            globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+          },
           includeAssets: ['icon.svg', 'images/*.png'],
           manifest: {
             name: 'GeoTasker Web',
@@ -23,16 +26,21 @@ export default defineConfig(({ mode }) => {
             background_color: '#ffffff',
             display: 'standalone',
             orientation: 'portrait',
+            id: '/',
+            start_url: '/',
+            scope: '/',
             icons: [
               {
                 src: 'icon.svg',
                 sizes: '192x192',
                 type: 'image/svg+xml',
+                purpose: 'any maskable'
               },
               {
                 src: 'icon.svg',
                 sizes: '512x512',
                 type: 'image/svg+xml',
+                purpose: 'any maskable'
               }
             ]
           }
