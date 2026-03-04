@@ -20,3 +20,18 @@ export const COMPLETED_ICON = L.icon({
 
 export const DEFAULT_CENTER = { lat: 40.4168, lng: -3.7038 }; // Madrid by default
 export const DEFAULT_RADIUS = 200; // meters
+
+export const TASK_CIRCLE_OPTIONS = {
+  color: '#3b82f6',
+  fillColor: '#3b82f6',
+  fillOpacity: 0.1,
+  weight: 1
+};
+
+export const PREVIEW_CIRCLE_OPTIONS = {
+  color: '#0ea5e9',
+  fillColor: '#0ea5e9',
+  fillOpacity: 0.2,
+  weight: 2,
+  dashArray: '5, 10'
+};

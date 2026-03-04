@@ -108,12 +108,15 @@ const App: React.FC = () => {
       />
 
       {/* Edit Modal */}
-      <EditTaskModal 
-        task={editingTask} 
-        isOpen={!!editingTask} 
-        onClose={() => setEditingTask(null)} 
-        onSave={handleUpdateTask}
-      />
+      {editingTask && (
+        <EditTaskModal
+          key={editingTask.id}
+          task={editingTask}
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+          onSave={handleUpdateTask}
+        />
+      )}
     </div>
   );
 };
