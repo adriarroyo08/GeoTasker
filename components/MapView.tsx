@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Task, GeoLocation } from '../types';
-import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON } from '../constants';
+import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS } from '../constants';
 import { Locate, Loader2 } from 'lucide-react';
 import L from 'leaflet';
 
@@ -160,7 +160,7 @@ export const MapView: React.FC<MapViewProps> = ({
                  <Circle 
                  center={[task.location.lat, task.location.lng]}
                  radius={task.radius}
-                 pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.1, weight: 1 }}
+                 pathOptions={TASK_CIRCLE_OPTIONS}
                />
               )}
             </React.Fragment>
@@ -174,13 +174,7 @@ export const MapView: React.FC<MapViewProps> = ({
             <Circle 
               center={[previewLocation.lat, previewLocation.lng]}
               radius={previewRadius}
-              pathOptions={{ 
-                color: '#0ea5e9', 
-                fillColor: '#0ea5e9', 
-                fillOpacity: 0.2, 
-                weight: 2, 
-                dashArray: '5, 10' 
-              }}
+              pathOptions={PREVIEW_CIRCLE_OPTIONS}
             />
           </>
         )}
