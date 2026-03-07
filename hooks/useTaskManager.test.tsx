@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTaskManager } from './useTaskManager';
 import { Task } from '../types';
@@ -24,6 +24,11 @@ Object.defineProperty(window, 'localStorage', {
 describe('useTaskManager', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should initialize with empty tasks', () => {
@@ -41,7 +46,7 @@ describe('useTaskManager', () => {
     expect(result.current.tasks).toEqual(mockTasks);
   });
 
-  it('should add a task', () => {
+  it('should add a task and debounce save to localStorage', () => {
     const { result } = renderHook(() => useTaskManager());
     const newTask: Task = { id: '1', title: 'New Task', description: '', radius: 100, isCompleted: false, createdAt: 123 };
 
@@ -51,10 +56,19 @@ describe('useTaskManager', () => {
 
     expect(result.current.tasks).toHaveLength(1);
     expect(result.current.tasks[0]).toEqual(newTask);
+
+    // Check it hasn't saved immediately
+    expect(localStorage.getItem('tasks')).toBeNull();
+
+    // Fast-forward 1 second
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
     expect(JSON.parse(localStorage.getItem('tasks')!)).toEqual([newTask]);
   });
 
-  it('should delete a task', () => {
+  it('should delete a task and debounce save to localStorage', () => {
     const { result } = renderHook(() => useTaskManager());
     const newTask: Task = { id: '1', title: 'New Task', description: '', radius: 100, isCompleted: false, createdAt: 123 };
 
@@ -63,14 +77,24 @@ describe('useTaskManager', () => {
     });
 
     act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(JSON.parse(localStorage.getItem('tasks')!)).toEqual([newTask]);
+
+    act(() => {
       result.current.deleteTask('1');
     });
 
     expect(result.current.tasks).toHaveLength(0);
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
     expect(JSON.parse(localStorage.getItem('tasks')!)).toEqual([]);
   });
 
-  it('should toggle a task', () => {
+  it('should toggle a task and debounce save to localStorage', () => {
     const { result } = renderHook(() => useTaskManager());
     const newTask: Task = { id: '1', title: 'New Task', description: '', radius: 100, isCompleted: false, createdAt: 123 };
 
@@ -83,10 +107,15 @@ describe('useTaskManager', () => {
     });
 
     expect(result.current.tasks[0].isCompleted).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
     expect(JSON.parse(localStorage.getItem('tasks')!)[0].isCompleted).toBe(true);
   });
 
-  it('should update a task', () => {
+  it('should update a task and debounce save to localStorage', () => {
     const { result } = renderHook(() => useTaskManager());
     const newTask: Task = { id: '1', title: 'New Task', description: '', radius: 100, isCompleted: false, createdAt: 123 };
 
@@ -101,6 +130,50 @@ describe('useTaskManager', () => {
     });
 
     expect(result.current.tasks[0].title).toBe('Updated Task');
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
     expect(JSON.parse(localStorage.getItem('tasks')!)[0].title).toBe('Updated Task');
+  });
+
+  it('should save immediately on unmount', () => {
+    const { result, unmount } = renderHook(() => useTaskManager());
+    const newTask: Task = { id: '1', title: 'New Task', description: '', radius: 100, isCompleted: false, createdAt: 123 };
+
+    act(() => {
+      result.current.addTask(newTask);
+    });
+
+    expect(localStorage.getItem('tasks')).toBeNull();
+
+    unmount();
+
+    expect(JSON.parse(localStorage.getItem('tasks')!)).toEqual([newTask]);
+  });
+
+  it('should save immediately on visibilitychange to hidden', () => {
+    const { result } = renderHook(() => useTaskManager());
+    const newTask: Task = { id: '1', title: 'New Task', description: '', radius: 100, isCompleted: false, createdAt: 123 };
+
+    act(() => {
+      result.current.addTask(newTask);
+    });
+
+    expect(localStorage.getItem('tasks')).toBeNull();
+
+    // Mock document.visibilityState
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'hidden',
+      writable: true,
+    });
+
+    // Dispatch visibilitychange event
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+
+    expect(JSON.parse(localStorage.getItem('tasks')!)).toEqual([newTask]);
   });
 });
