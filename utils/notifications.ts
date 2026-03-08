@@ -1,3 +1,4 @@
+import { Task } from "../types";
 export interface ExtendedNotificationOptions extends NotificationOptions {
     actions?: NotificationAction[];
     vibrate?: number[];
@@ -14,6 +15,20 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
     }
 
     return Notification.permission;
+};
+
+export const triggerGeofenceNotification = (task: Task) => {
+  const title = `📍 ¡Llegaste a tu destino!`;
+  const options: ExtendedNotificationOptions = {
+    body: `Estás cerca de: ${task.title}\n${task.description || ''}`,
+    icon: '/images/marker-icon.png',
+    badge: '/images/marker-icon.png',
+    tag: `geofence-${task.id}`,
+    renotify: true,
+    vibrate: [200, 100, 200],
+    data: { taskId: task.id }
+  };
+  sendNotification(title, options);
 };
 
 export const sendNotification = async (title: string, options: ExtendedNotificationOptions) => {

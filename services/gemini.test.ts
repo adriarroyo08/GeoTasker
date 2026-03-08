@@ -1,12 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { parseTaskWithGemini } from './gemini';
 
-// Mock the global process to simulate environment
-vi.stubGlobal('process', {
-  env: {
-    API_KEY: 'test_key'
-  }
-});
+// Mock environment variable used by Vite
+vi.stubEnv('VITE_GEMINI_API_KEY', 'test_key');
 
 // Mock @google/genai module
 const mockGenerateContent = vi.fn();

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { GeoLocation, Task } from '../types';
 import { calculateDistance } from '../utils/geo';
-import { requestNotificationPermission, sendNotification, ExtendedNotificationOptions } from '../utils/notifications';
+import { requestNotificationPermission, triggerGeofenceNotification } from '../utils/notifications';
 
 // Strategies for location tracking
 const HIGH_ACCURACY_OPTIONS: PositionOptions = {
@@ -14,20 +14,6 @@ const LOW_ACCURACY_OPTIONS: PositionOptions = {
   enableHighAccuracy: false,
   timeout: 30000,
   maximumAge: 60000
-};
-
-const triggerGeofenceNotification = (task: Task) => {
-  const title = `📍 ¡Llegaste a tu destino!`;
-  const options: ExtendedNotificationOptions = {
-    body: `Estás cerca de: ${task.title}\n${task.description || ''}`,
-    icon: '/images/marker-icon.png',
-    badge: '/images/marker-icon.png',
-    tag: `geofence-${task.id}`,
-    renotify: true,
-    vibrate: [200, 100, 200],
-    data: { taskId: task.id }
-  };
-  sendNotification(title, options);
 };
 
 export const useGeofencing = (tasks: Task[]) => {

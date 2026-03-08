@@ -8,6 +8,7 @@ import * as Notifications from '../utils/notifications';
 vi.mock('../utils/notifications', () => ({
   requestNotificationPermission: vi.fn(),
   sendNotification: vi.fn(),
+  triggerGeofenceNotification: vi.fn(),
 }));
 
 // Mock Geolocation
@@ -83,9 +84,8 @@ describe('useGeofencing', () => {
       } as GeolocationPosition);
     });
 
-    expect(Notifications.sendNotification).toHaveBeenCalledWith(
-      expect.stringContaining('Llegaste'),
-      expect.objectContaining({ body: expect.stringContaining('Pharmacy') })
+    expect(Notifications.triggerGeofenceNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ id: '1', title: 'Pharmacy' })
     );
   });
 
