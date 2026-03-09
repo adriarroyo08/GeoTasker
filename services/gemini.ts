@@ -2,14 +2,16 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 // Initialize Gemini
 // Use a dummy key if missing to prevent crash on startup, actual calls will fail and trigger fallback
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "dummy_key";
+const apiKey = process.env.API_KEY || "dummy_key";
 const ai = new GoogleGenAI({ apiKey });
 
 export const parseTaskWithGemini = async (input: string): Promise<{ title: string; description: string; hasLocation: boolean; suggestedLocationName?: string }> => {
   try {
     if (apiKey === "dummy_key") throw new Error("No API Key");
 
-    const sanitizedInput = JSON.stringify(input);
+    // Truncate to 500 characters to prevent excessive token usage
+    const truncatedInput = input.substring(0, 500);
+    const sanitizedInput = JSON.stringify(truncatedInput);
 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash",
