@@ -2,6 +2,13 @@ import L from 'leaflet';
 
 // Fix for default Leaflet markers in React
 // Using local assets for production readiness and offline support
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: '/images/marker-icon.png',
+  iconUrl: '/images/marker-icon.png',
+  shadowUrl: '/images/marker-shadow.png',
+});
+
 export const DEFAULT_ICON = L.icon({
   iconUrl: '/images/marker-icon.png',
   shadowUrl: '/images/marker-shadow.png',
