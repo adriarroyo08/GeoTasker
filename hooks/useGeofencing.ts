@@ -1,20 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { GeoLocation, Task } from '../types';
-import { calculateDistance } from '../utils/geo';
+import { calculateDistance, HIGH_ACCURACY_OPTIONS, LOW_ACCURACY_OPTIONS } from '../utils/geo';
 import { requestNotificationPermission, triggerGeofenceNotification } from '../utils/notifications';
-
-// Strategies for location tracking
-const HIGH_ACCURACY_OPTIONS: PositionOptions = {
-  enableHighAccuracy: true,
-  timeout: 20000, // Increased to 20s
-  maximumAge: 5000 
-};
-
-const LOW_ACCURACY_OPTIONS: PositionOptions = {
-  enableHighAccuracy: false,
-  timeout: 30000,
-  maximumAge: 60000
-};
 
 export const useGeofencing = (tasks: Task[]) => {
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
