@@ -1,6 +1,6 @@
 import { Task } from "../types";
 export interface ExtendedNotificationOptions extends NotificationOptions {
-    actions?: NotificationAction[];
+    actions?: any[];
     vibrate?: number[];
     renotify?: boolean;
 }
