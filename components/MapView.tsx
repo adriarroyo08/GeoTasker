@@ -38,6 +38,13 @@ const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void }> = ({ 
   return null;
 };
 
+// Helper to share geolocation options
+const GEOLOCATION_OPTIONS = {
+  enableHighAccuracy: true,
+  timeout: 20000,
+  maximumAge: 10000
+};
+
 // Control to manually locate user
 const LocateControl: React.FC<{ 
   onFound: (lat: number, lng: number) => void; 
@@ -52,12 +59,6 @@ const LocateControl: React.FC<{
     e.preventDefault();
     setLoading(true);
 
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 20000, // 20s timeout
-      maximumAge: 10000 // Accept cache
-    };
-
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
@@ -68,14 +69,13 @@ const LocateControl: React.FC<{
       (err) => {
         console.error(err);
         setLoading(false);
-        // Retry with lower accuracy if timeout
         if (err.code === 3) {
            alert("El GPS tardó demasiado. Intenta moverte a un lugar despejado o espera un momento.");
         } else {
            alert("No se pudo obtener la ubicación actual.");
         }
       },
-      options
+      GEOLOCATION_OPTIONS
     );
   };
 
