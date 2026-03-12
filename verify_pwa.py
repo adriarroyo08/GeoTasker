@@ -13,7 +13,7 @@ def verify_pwa():
 
         try:
             # Navigate to the app
-            page.goto("http://localhost:4173/")
+            page.goto("http://localhost:4176/")
             page.wait_for_load_state("networkidle")
 
             # Verify Title
