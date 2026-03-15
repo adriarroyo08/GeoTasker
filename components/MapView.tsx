@@ -16,11 +16,18 @@ interface MapViewProps {
   isDarkMode?: boolean;
 }
 
+import { useRef } from 'react';
+
 // Helper to update map view when user location changes
 const RecenterMap: React.FC<{ center: [number, number] }> = ({ center }) => {
   const map = useMap();
+  const hasCentered = useRef(false);
+
   useEffect(() => {
-    map.setView(center, map.getZoom());
+    if (!hasCentered.current) {
+      map.setView(center, map.getZoom());
+      hasCentered.current = true;
+    }
   }, [center, map]);
   return null;
 };

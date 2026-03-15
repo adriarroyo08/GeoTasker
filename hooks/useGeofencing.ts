@@ -24,6 +24,11 @@ export const useGeofencing = (tasks: Task[]) => {
   
   const watchIdRef = useRef<number | null>(null);
   const lastUpdateRef = useRef<number>(0);
+  const userLocationRef = useRef<GeoLocation | null>(userLocation);
+
+  useEffect(() => {
+    userLocationRef.current = userLocation;
+  }, [userLocation]);
 
   const checkGeofences = () => {
     if (!userLocation) return;
@@ -63,7 +68,7 @@ export const useGeofencing = (tasks: Task[]) => {
       setUseHighAccuracy(false);
       return;
     }
-    if (!userLocation) {
+    if (!userLocationRef.current) {
       let msg = "No se pudo obtener la ubicación.";
       if (error.code === 1) msg = "Permiso de ubicación denegado.";
       if (error.code === 3) msg = "Tiempo de espera agotado. Muévete a un área despejada.";
