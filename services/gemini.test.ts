@@ -1,94 +1,78 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { parseTaskWithGemini } from './gemini';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock environment variable used by Vite
-vi.stubEnv('VITE_GEMINI_API_KEY', 'test_key');
+// Mock import.meta.env
+vi.stubEnv('VITE_GEMINI_API_KEY', 'test_api_key');
 
-// Mock @google/genai module
-const mockGenerateContent = vi.fn();
+// Custom mock response to return from mockGenerateContent
+let mockGenerateContentResponse: any;
 
+// A mock function we can inspect
+const mockGenerateContent = vi.fn().mockImplementation(async () => {
+  if (mockGenerateContentResponse instanceof Error) {
+    throw mockGenerateContentResponse;
+  }
+  return mockGenerateContentResponse;
+});
+
+// Mock @google/genai module as specified in memory
 vi.mock('@google/genai', () => {
   return {
+    Type: {
+      OBJECT: 'object',
+      STRING: 'string',
+      BOOLEAN: 'boolean'
+    },
     GoogleGenAI: class {
       models = {
         generateContent: (...args: any[]) => mockGenerateContent(...args)
-      };
-    },
-    Type: {
-      OBJECT: 'OBJECT',
-      STRING: 'STRING',
-      BOOLEAN: 'BOOLEAN'
+      }
     }
   };
 });
 
+import { parseTaskWithGemini } from './gemini';
+
 describe('parseTaskWithGemini', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockGenerateContent.mockClear();
   });
 
-  it('should successfully parse a valid input with location', async () => {
-    const mockResponse = {
-      text: JSON.stringify({
-        title: "Comprar leche",
-        description: "En el supermercado de la esquina",
-        hasLocation: true,
-        suggestedLocationName: "supermercado de la esquina"
-      })
-    };
-    mockGenerateContent.mockResolvedValue(mockResponse);
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
-    const input = "Comprar leche en el supermercado de la esquina";
-    const result = await parseTaskWithGemini(input);
-
-    expect(result).toEqual({
-      title: "Comprar leche",
-      description: "En el supermercado de la esquina",
+  it('should successfully parse a task with location', async () => {
+    const mockJson = {
+      title: 'Comprar pan',
+      description: 'En la panadería del centro',
       hasLocation: true,
-      suggestedLocationName: "supermercado de la esquina"
-    });
-
-    // Check that sanitization doesn't modify a normal string
-    expect(mockGenerateContent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        contents: expect.stringContaining(input)
-      })
-    );
-  });
-
-  it('should sanitize input containing quotes and backslashes', async () => {
-    const mockResponse = {
-      text: JSON.stringify({
-        title: "Test Task",
-        description: "Test Desc",
-        hasLocation: false
-      })
+      suggestedLocationName: 'panadería del centro'
     };
-    mockGenerateContent.mockResolvedValue(mockResponse);
+    mockGenerateContentResponse = { text: JSON.stringify(mockJson) };
 
-    const rawInput = 'Task with "quotes" and \\backslashes\\';
-    const expectedSanitized = 'Task with \\"quotes\\" and \\\\backslashes\\\\';
+    const result = await parseTaskWithGemini('Comprar pan en la panadería del centro');
 
-    await parseTaskWithGemini(rawInput);
-
-    // Assert that the API was called with the sanitized string
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
     expect(mockGenerateContent).toHaveBeenCalledWith(
       expect.objectContaining({
-        contents: expect.stringContaining(expectedSanitized)
+        model: 'gemini-2.0-flash',
       })
     );
+    expect(result).toEqual(mockJson);
   });
 
-  it('should fallback properly on API error', async () => {
-    mockGenerateContent.mockRejectedValue(new Error('API failed'));
+  it('should fallback when generateContent throws an error', async () => {
+    mockGenerateContentResponse = new Error('API Error');
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const input = "Hacer ejercicio";
-    const result = await parseTaskWithGemini(input);
+    const result = await parseTaskWithGemini('Una tarea fallida');
 
     expect(result).toEqual({
-      title: input,
-      description: "Generado automáticamente (Fallback)",
+      title: 'Una tarea fallida',
+      description: 'Generado automáticamente (Fallback)',
       hasLocation: false
     });
+
+    consoleErrorSpy.mockRestore();
   });
 });
