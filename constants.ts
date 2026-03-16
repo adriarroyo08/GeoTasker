@@ -25,6 +25,13 @@ export const COMPLETED_ICON = L.icon({
   shadowSize: [41, 41]
 });
 
+export const USER_ICON = L.divIcon({
+  className: 'user-location-marker',
+  html: '<div class="user-marker-pulse"></div>',
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+});
+
 export const DEFAULT_CENTER = { lat: 40.4168, lng: -3.7038 }; // Madrid by default
 export const DEFAULT_RADIUS = 200; // meters
 

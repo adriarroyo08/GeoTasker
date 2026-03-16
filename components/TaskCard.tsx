@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Task } from '../types';
-import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil, X } from 'lucide-react';
 import { formatDistance, calculateDistance } from '../utils/geo';
 
 interface TaskCardProps {
@@ -13,6 +13,8 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDelete, onEdit }) => {
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+
   let distanceStr = '';
   if (task.location && userLat !== undefined && userLng !== undefined) {
     const dist = calculateDistance(userLat, userLng, task.location.lat, task.location.lng);
@@ -20,9 +22,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
   }
 
   const handleDelete = () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
-      onDelete(task.id);
-    }
+    onDelete(task.id);
   };
 
   // Dynamic base classes depending on completion and dark mode
@@ -86,20 +86,44 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
         </div>
 
         <div className="flex flex-col gap-1">
-          <button 
-            onClick={() => onEdit(task)}
-            className="text-gray-300 hover:text-blue-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-blue-400"
-            aria-label="Editar tarea"
-          >
-            <Pencil size={18} />
-          </button>
-          <button 
-            onClick={handleDelete}
-            className="text-gray-300 hover:text-red-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-red-400"
-            aria-label="Eliminar tarea"
-          >
-            <Trash2 size={18} />
-          </button>
+          {showConfirmDelete ? (
+            <div className="flex flex-col items-center gap-2 bg-red-50 dark:bg-red-900/30 p-2 rounded-lg border border-red-100 dark:border-red-900/50">
+              <span className="text-xs text-red-600 dark:text-red-400 font-medium">¿Eliminar?</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDelete}
+                  className="bg-red-600 text-white p-1.5 rounded hover:bg-red-700 transition-colors"
+                  aria-label="Confirmar eliminar"
+                >
+                  <CheckCircle size={16} />
+                </button>
+                <button
+                  onClick={() => setShowConfirmDelete(false)}
+                  className="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 p-1.5 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  aria-label="Cancelar eliminar"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={() => onEdit(task)}
+                className="text-gray-300 hover:text-blue-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-blue-400"
+                aria-label="Editar tarea"
+              >
+                <Pencil size={18} />
+              </button>
+              <button
+                onClick={() => setShowConfirmDelete(true)}
+                className="text-gray-300 hover:text-red-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-red-400"
+                aria-label="Eliminar tarea"
+              >
+                <Trash2 size={18} />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
