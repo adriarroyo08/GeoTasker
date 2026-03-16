@@ -19,7 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ locationError, darkMode, toggleT
 
       <div className="flex items-center gap-3">
         {locationError && (
-          <div className="text-xs text-red-500 max-w-[150px] leading-tight text-right hidden sm:block">
+          <div className="text-xs text-red-500 max-w-[150px] leading-tight text-right">
             {locationError}
           </div>
         )}

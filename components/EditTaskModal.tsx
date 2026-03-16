@@ -13,6 +13,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
   const [title, setTitle] = useState(task?.title || '');
   const [description, setDescription] = useState(task?.description || '');
   const [radius, setRadius] = useState(task?.radius || 200);
+  const [dueDate, setDueDate] = useState(task?.dueDate ? task.dueDate.split('T')[0] : '');
 
   if (!isOpen || !task) return null;
 
@@ -22,7 +23,8 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
       ...task,
       title,
       description,
-      radius
+      radius,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : undefined
     });
   };
 
@@ -43,6 +45,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              maxLength={100}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
               required
             />
@@ -54,6 +57,16 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none h-24 resize-none dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha de vencimiento</label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
             />
           </div>
 
