@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Task } from '../types';
-import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil, X, AlertTriangle } from 'lucide-react';
 import { formatDistance, calculateDistance } from '../utils/geo';
 
 interface TaskCardProps {
@@ -13,6 +13,7 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDelete, onEdit }) => {
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   let distanceStr = '';
   if (task.location && userLat !== undefined && userLng !== undefined) {
     const dist = calculateDistance(userLat, userLng, task.location.lat, task.location.lng);
@@ -20,9 +21,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
   }
 
   const handleDelete = () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
-      onDelete(task.id);
-    }
+    onDelete(task.id);
+    setIsConfirmingDelete(false);
   };
 
   // Dynamic base classes depending on completion and dark mode
@@ -94,7 +94,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
             <Pencil size={18} />
           </button>
           <button 
-            onClick={handleDelete}
+            onClick={() => setIsConfirmingDelete(true)}
             className="text-gray-300 hover:text-red-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-red-400"
             aria-label="Eliminar tarea"
           >
@@ -102,6 +102,41 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
           </button>
         </div>
       </div>
+
+      {isConfirmingDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200 border dark:border-gray-700">
+            <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700 bg-red-50 dark:bg-red-900/20">
+              <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold">
+                <AlertTriangle size={20} />
+                <h3>Eliminar Tarea</h3>
+              </div>
+              <button onClick={() => setIsConfirmingDelete(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-5">
+              <p className="text-gray-700 dark:text-gray-300 mb-6 text-sm">
+                ¿Estás seguro de que deseas eliminar la tarea "{task.title}"? Esta acción no se puede deshacer.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsConfirmingDelete(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
