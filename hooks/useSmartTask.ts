@@ -36,7 +36,6 @@ export const useSmartTask = ({ addTask, setView }: UseSmartTaskProps) => {
         setIsSelectingLocation(true);
         setView(AppView.MAP);
         setTempLocation(null);
-        alert(`Gemini detectó una ubicación: "${parsed.suggestedLocationName || 'Desconocida'}".\nPor favor, selecciona el punto exacto en el mapa.`);
       } else {
         finalizeTaskCreation(newTask);
       }

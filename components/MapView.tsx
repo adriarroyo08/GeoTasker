@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Task, GeoLocation } from '../types';
-import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS } from '../constants';
+import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, USER_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS } from '../constants';
 import { Locate, Loader2 } from 'lucide-react';
 import L from 'leaflet';
 
@@ -19,8 +19,12 @@ interface MapViewProps {
 // Helper to update map view when user location changes
 const RecenterMap: React.FC<{ center: [number, number] }> = ({ center }) => {
   const map = useMap();
+  const hasCentered = useRef(false);
   useEffect(() => {
-    map.setView(center, map.getZoom());
+    if (!hasCentered.current) {
+      map.setView(center, map.getZoom());
+      hasCentered.current = true;
+    }
   }, [center, map]);
   return null;
 };
@@ -30,10 +34,11 @@ const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void }> = ({ 
   const map = useMap();
   useEffect(() => {
     if (!map) return;
-    map.on('click', (e) => {
+    const handler = (e: any) => {
       onClick(e.latlng.lat, e.latlng.lng);
-    });
-    return () => { map.off('click'); };
+    };
+    map.on('click', handler);
+    return () => { map.off('click', handler); };
   }, [map, onClick]);
   return null;
 };
@@ -70,9 +75,9 @@ const LocateControl: React.FC<{
         console.error(err);
         setLoading(false);
         if (err.code === 3) {
-           alert("El GPS tardó demasiado. Intenta moverte a un lugar despejado o espera un momento.");
+           console.error("El GPS tardó demasiado. Intenta moverte a un lugar despejado o espera un momento.");
         } else {
-           alert("No se pudo obtener la ubicación actual.");
+           console.error("No se pudo obtener la ubicación actual.");
         }
       },
       GEOLOCATION_OPTIONS
@@ -123,6 +128,14 @@ export const MapView: React.FC<MapViewProps> = ({
 
   return (
     <div className={`h-full w-full rounded-xl overflow-hidden shadow-inner border relative ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200'}`}>
+      {!userLocation && (
+        <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-900/50 z-[2000] backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="animate-spin text-blue-600" size={32} />
+            <span className="text-gray-600 dark:text-gray-300 font-medium">Obteniendo ubicación...</span>
+          </div>
+        </div>
+      )}
       <MapContainer 
         center={center} 
         zoom={15} 
@@ -135,7 +148,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
         {userLocation && (
           <>
-            <Marker position={[userLocation.lat, userLocation.lng]} icon={DEFAULT_ICON}>
+            <Marker position={[userLocation.lat, userLocation.lng]} icon={USER_ICON}>
               <Popup>Tu ubicación actual</Popup>
             </Marker>
             <RecenterMap center={[userLocation.lat, userLocation.lng]} />
