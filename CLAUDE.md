@@ -98,19 +98,20 @@ npm test -- --run  # Run tests once (CI mode)
 
 | File | Coverage |
 |------|---------|
-| `hooks/useTaskManager.test.tsx` | Task CRUD, localStorage debounce, visibility save |
-| `hooks/useGeofencing.test.ts` | Geolocation watch, geofence triggers, accuracy fallback |
-| `hooks/useSmartTask.test.tsx` | AI parse flow, location confirmation |
+| `hooks/useTaskManager.test.tsx` | Task CRUD, localStorage debounce, visibility save, invalid JSON fallback |
+| `hooks/useGeofencing.test.ts` | Geolocation watch, geofence triggers, accuracy fallback, throttle, completed/no-location skip, updateLocation, dedup |
+| `hooks/useSmartTask.test.tsx` | AI parse flow, location confirmation, cancelLocation, empty/whitespace input guard, no tempLocation guard |
 | `hooks/useTheme.test.tsx` | Dark mode init, toggle, localStorage, meta tag |
-| `services/gemini.test.ts` | Gemini API calls, input sanitisation, error fallback |
-| `components/TaskCard.test.tsx` | Render, distance badge, edit/delete interactions |
+| `services/gemini.test.ts` | Gemini API calls, input sanitisation, error fallback, empty/undefined response fallback |
+| `components/TaskCard.test.tsx` | Render, distance badge, edit/delete interactions, completed styling, due date badge, empty description |
 | `components/Header.test.tsx` | Title, theme icon, error message |
 | `components/BottomNav.test.tsx` | View switching, cancelLocation integration |
 | `components/EditTaskModal.test.tsx` | Form render, input changes, onSave/onClose callbacks |
+| `components/TaskList.test.tsx` | Input area, empty state, task count (pending only), rendering, keyboard/click handlers, disabled states |
 | `utils/geo.test.ts` | Haversine formula, formatDistance |
-| `utils/notifications.test.ts` | Permission request, SW fallback, Notification API |
+| `utils/notifications.test.ts` | Permission request, SW fallback, Notification API, SW error fallback, triggerGeofenceNotification |
 
-**Total: 83 tests across 11 suites.**
+**Total: 119 tests across 12 suites.**
 
 ### Testing Conventions
 

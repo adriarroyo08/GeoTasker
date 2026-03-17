@@ -97,4 +97,36 @@ describe('TaskCard', () => {
 
     window.confirm = originalConfirm;
   });
+
+  it('renders completed task with line-through styling', () => {
+    const completedTask: Task = { ...baseTask, isCompleted: true };
+    const { container } = render(
+      <TaskCard task={completedTask} onToggle={mockOnToggle} onDelete={mockOnDelete} onEdit={mockOnEdit} />
+    );
+    const title = container.querySelector('h3');
+    expect(title?.className).toContain('line-through');
+  });
+
+  it('renders due date badge when dueDate is provided', () => {
+    const taskWithDate: Task = { ...baseTask, dueDate: '2026-12-31T00:00:00.000Z' };
+    render(<TaskCard task={taskWithDate} onToggle={mockOnToggle} onDelete={mockOnDelete} onEdit={mockOnEdit} />);
+    // Should render a date string (format depends on locale, but some date text should appear)
+    // The calendar badge container exists
+    const { container } = render(
+      <TaskCard task={taskWithDate} onToggle={mockOnToggle} onDelete={mockOnDelete} onEdit={mockOnEdit} />
+    );
+    // Find the element containing a date-formatted text — it exists when dueDate is set
+    const spans = container.querySelectorAll('span');
+    const dateSpan = Array.from(spans).find(s => s.textContent && /\d{4}|\d{1,2}\/\d{1,2}/.test(s.textContent));
+    expect(dateSpan).toBeTruthy();
+  });
+
+  it('does not render description when description is empty', () => {
+    const taskNoDesc: Task = { ...baseTask, description: '' };
+    const { container } = render(
+      <TaskCard task={taskNoDesc} onToggle={mockOnToggle} onDelete={mockOnDelete} onEdit={mockOnEdit} />
+    );
+    const paragraphs = container.querySelectorAll('p');
+    expect(paragraphs.length).toBe(0);
+  });
 });

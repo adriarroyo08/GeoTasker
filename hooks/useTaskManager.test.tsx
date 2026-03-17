@@ -46,6 +46,12 @@ describe('useTaskManager', () => {
     expect(result.current.tasks).toEqual(mockTasks);
   });
 
+  it('should initialize with empty array if localStorage contains invalid JSON', () => {
+    localStorage.setItem('tasks', 'not-valid-json{{}}');
+    const { result } = renderHook(() => useTaskManager());
+    expect(result.current.tasks).toEqual([]);
+  });
+
   it('should add a task and debounce save to localStorage', () => {
     const { result } = renderHook(() => useTaskManager());
     const newTask: Task = { id: '1', title: 'New Task', description: '', radius: 100, isCompleted: false, createdAt: 123 };
