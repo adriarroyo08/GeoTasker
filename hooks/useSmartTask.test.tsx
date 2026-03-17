@@ -124,4 +124,83 @@ describe('useSmartTask', () => {
     expect(result.current.isSelectingLocation).toBe(false);
     expect(mockSetView).toHaveBeenCalledWith(AppView.LIST);
   });
+
+  it('should cancel location selection', async () => {
+    const mockParsed = {
+      title: 'Go to Park',
+      description: 'Have fun',
+      hasLocation: true,
+      suggestedLocationName: 'Central Park'
+    };
+    vi.spyOn(geminiService, 'parseTaskWithGemini').mockResolvedValue(mockParsed);
+    vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+    const { result } = renderHook(() => useSmartTask({ addTask: mockAddTask, setView: mockSetView }));
+
+    act(() => { result.current.setNewTaskInput('Go to Park'); });
+    await act(async () => { await result.current.handleSmartAdd(); });
+
+    expect(result.current.isSelectingLocation).toBe(true);
+
+    act(() => { result.current.cancelLocation(); });
+
+    expect(result.current.isSelectingLocation).toBe(false);
+    expect(result.current.pendingTask).toBeNull();
+    expect(result.current.tempLocation).toBeNull();
+    expect(mockSetView).toHaveBeenLastCalledWith(AppView.LIST);
+    expect(mockAddTask).not.toHaveBeenCalled();
+  });
+
+  it('should not process empty input', async () => {
+    const { result } = renderHook(() => useSmartTask({ addTask: mockAddTask, setView: mockSetView }));
+
+    await act(async () => {
+      await result.current.handleSmartAdd();
+    });
+
+    expect(geminiService.parseTaskWithGemini).not.toHaveBeenCalled();
+    expect(mockAddTask).not.toHaveBeenCalled();
+  });
+
+  it('should not process whitespace-only input', async () => {
+    const { result } = renderHook(() => useSmartTask({ addTask: mockAddTask, setView: mockSetView }));
+
+    act(() => { result.current.setNewTaskInput('   '); });
+
+    await act(async () => {
+      await result.current.handleSmartAdd();
+    });
+
+    expect(geminiService.parseTaskWithGemini).not.toHaveBeenCalled();
+    expect(mockAddTask).not.toHaveBeenCalled();
+  });
+
+  it('should not update tempLocation when not selecting location', () => {
+    const { result } = renderHook(() => useSmartTask({ addTask: mockAddTask, setView: mockSetView }));
+
+    act(() => { result.current.handleMapClick(10, 20); });
+
+    expect(result.current.tempLocation).toBeNull();
+  });
+
+  it('should not confirm location if tempLocation is not set', async () => {
+    const mockParsed = {
+      title: 'Go to Park',
+      description: '',
+      hasLocation: true,
+      suggestedLocationName: 'Park'
+    };
+    vi.spyOn(geminiService, 'parseTaskWithGemini').mockResolvedValue(mockParsed);
+    vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+    const { result } = renderHook(() => useSmartTask({ addTask: mockAddTask, setView: mockSetView }));
+
+    act(() => { result.current.setNewTaskInput('Go to Park'); });
+    await act(async () => { await result.current.handleSmartAdd(); });
+
+    // Don't call handleMapClick, so tempLocation stays null
+    act(() => { result.current.confirmLocation(); });
+
+    expect(mockAddTask).not.toHaveBeenCalled();
+  });
 });

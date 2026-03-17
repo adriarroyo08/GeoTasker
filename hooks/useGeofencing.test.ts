@@ -129,4 +129,94 @@ describe('useGeofencing', () => {
        expect.objectContaining({ enableHighAccuracy: false })
      );
   });
+
+  it('should NOT trigger notification for completed tasks', () => {
+    const completedTasks = [{ ...mockTasks[0], isCompleted: true }];
+    renderHook(() => useGeofencing(completedTasks));
+    const successCallback = watchPositionMock.mock.calls[0][0];
+
+    act(() => {
+      vi.setSystemTime(new Date(3000));
+      successCallback({
+        coords: { latitude: 40.7128, longitude: -74.0060 }
+      } as GeolocationPosition);
+    });
+
+    expect(Notifications.triggerGeofenceNotification).not.toHaveBeenCalled();
+  });
+
+  it('should NOT trigger notification for tasks without location', () => {
+    const tasksNoLocation = [{ ...mockTasks[0], location: undefined }];
+    renderHook(() => useGeofencing(tasksNoLocation));
+    const successCallback = watchPositionMock.mock.calls[0][0];
+
+    act(() => {
+      vi.setSystemTime(new Date(3000));
+      successCallback({
+        coords: { latitude: 40.7128, longitude: -74.0060 }
+      } as GeolocationPosition);
+    });
+
+    expect(Notifications.triggerGeofenceNotification).not.toHaveBeenCalled();
+  });
+
+  it('should set location error on permission denied (code 1)', () => {
+    const { result } = renderHook(() => useGeofencing([]));
+    const errorCallback = watchPositionMock.mock.calls[0][1];
+
+    act(() => {
+      errorCallback({ code: 1, message: 'Permission denied' } as GeolocationPositionError);
+    });
+
+    expect(result.current.locationError).toBe('Permiso de ubicación denegado.');
+  });
+
+  it('should throttle location updates within 2000ms', () => {
+    const { result } = renderHook(() => useGeofencing([]));
+    const successCallback = watchPositionMock.mock.calls[0][0];
+
+    act(() => {
+      vi.setSystemTime(new Date(3000));
+      successCallback({ coords: { latitude: 10, longitude: 20 } } as GeolocationPosition);
+    });
+
+    expect(result.current.userLocation).toEqual({ lat: 10, lng: 20 });
+
+    act(() => {
+      // Only 500ms later — should be throttled
+      vi.setSystemTime(new Date(3500));
+      successCallback({ coords: { latitude: 50, longitude: 60 } } as GeolocationPosition);
+    });
+
+    // Should still be the first location
+    expect(result.current.userLocation).toEqual({ lat: 10, lng: 20 });
+  });
+
+  it('should update location via updateLocation helper', () => {
+    const { result } = renderHook(() => useGeofencing([]));
+
+    act(() => {
+      result.current.updateLocation(48.8566, 2.3522);
+    });
+
+    expect(result.current.userLocation).toEqual({ lat: 48.8566, lng: 2.3522 });
+  });
+
+  it('should not trigger the same geofence notification twice', () => {
+    renderHook(() => useGeofencing(mockTasks));
+    const successCallback = watchPositionMock.mock.calls[0][0];
+
+    act(() => {
+      vi.setSystemTime(new Date(3000));
+      successCallback({ coords: { latitude: 40.7128, longitude: -74.0060 } } as GeolocationPosition);
+    });
+
+    act(() => {
+      vi.setSystemTime(new Date(6000));
+      successCallback({ coords: { latitude: 40.7128, longitude: -74.0060 } } as GeolocationPosition);
+    });
+
+    // Notification should only fire once despite two position updates
+    expect(Notifications.triggerGeofenceNotification).toHaveBeenCalledTimes(1);
+  });
 });

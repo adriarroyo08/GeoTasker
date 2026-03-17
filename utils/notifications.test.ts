@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { requestNotificationPermission, sendNotification } from './notifications';
+import { requestNotificationPermission, sendNotification, triggerGeofenceNotification } from './notifications';
+import { Task } from '../types';
 
 describe('utils/notifications', () => {
     // Keep a reference to the original Notification object
@@ -114,6 +115,89 @@ describe('utils/notifications', () => {
 
             expect(showNotificationMock).toHaveBeenCalledWith('SW Title', { body: 'SW Body' });
             expect(notificationConstructorMock).not.toHaveBeenCalled();
+        });
+
+        it('should fallback to Notification API if SW showNotification throws', async () => {
+            // @ts-ignore
+            window.Notification.permission = 'granted';
+
+            const mockRegistration = {
+                showNotification: vi.fn().mockRejectedValue(new Error('SW error'))
+            };
+
+            Object.defineProperty(navigator, 'serviceWorker', {
+                value: { ready: Promise.resolve(mockRegistration) },
+                writable: true,
+                configurable: true
+            });
+
+            await sendNotification('Fallback Title', { body: 'Fallback Body' });
+
+            expect(notificationConstructorMock).toHaveBeenCalledWith('Fallback Title', { body: 'Fallback Body' });
+        });
+    });
+
+    describe('triggerGeofenceNotification', () => {
+        const sampleTask: Task = {
+            id: 'task-geo-1',
+            title: 'Farmacia',
+            description: 'Comprar medicamentos',
+            radius: 200,
+            isCompleted: false,
+            createdAt: 1000,
+        };
+
+        beforeEach(() => {
+            // @ts-ignore
+            window.Notification.permission = 'granted';
+            Object.defineProperty(navigator, 'serviceWorker', {
+                value: undefined,
+                writable: true,
+                configurable: true
+            });
+        });
+
+        it('should call sendNotification with correct title containing pin emoji', async () => {
+            triggerGeofenceNotification(sampleTask);
+            // Allow async sendNotification to resolve
+            await Promise.resolve();
+            expect(notificationConstructorMock).toHaveBeenCalledWith(
+                expect.stringContaining('📍'),
+                expect.any(Object)
+            );
+        });
+
+        it('should include task title in notification body', async () => {
+            triggerGeofenceNotification(sampleTask);
+            await Promise.resolve();
+            expect(notificationConstructorMock).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({
+                    body: expect.stringContaining('Farmacia')
+                })
+            );
+        });
+
+        it('should use task id as notification tag', async () => {
+            triggerGeofenceNotification(sampleTask);
+            await Promise.resolve();
+            expect(notificationConstructorMock).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({
+                    tag: `geofence-${sampleTask.id}`
+                })
+            );
+        });
+
+        it('should include taskId in notification data', async () => {
+            triggerGeofenceNotification(sampleTask);
+            await Promise.resolve();
+            expect(notificationConstructorMock).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({
+                    data: { taskId: sampleTask.id }
+                })
+            );
         });
     });
 });

@@ -91,4 +91,30 @@ describe('parseTaskWithGemini', () => {
       hasLocation: false
     });
   });
+
+  it('should fallback when API returns empty response text', async () => {
+    mockGenerateContent.mockResolvedValue({ text: null });
+
+    const input = "Tarea sin respuesta";
+    const result = await parseTaskWithGemini(input);
+
+    expect(result).toEqual({
+      title: input,
+      description: "Generado automáticamente (Fallback)",
+      hasLocation: false
+    });
+  });
+
+  it('should fallback when API returns undefined response text', async () => {
+    mockGenerateContent.mockResolvedValue({});
+
+    const input = "Tarea respuesta indefinida";
+    const result = await parseTaskWithGemini(input);
+
+    expect(result).toEqual({
+      title: input,
+      description: "Generado automáticamente (Fallback)",
+      hasLocation: false
+    });
+  });
 });
