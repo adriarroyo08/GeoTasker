@@ -43,10 +43,12 @@ describe('useGeofencing', () => {
     vi.useFakeTimers();
     watchPositionMock.mockReturnValue(123); // Mock watch ID
     (Notifications.requestNotificationPermission as any).mockResolvedValue('granted');
+    localStorage.clear();
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    localStorage.clear();
   });
 
   it('should initialize and request notification permission', () => {
