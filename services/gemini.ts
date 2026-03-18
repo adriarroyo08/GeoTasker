@@ -12,7 +12,7 @@ export const parseTaskWithGemini = async (input: string): Promise<{ title: strin
     const sanitizedInput = JSON.stringify(input);
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash",
+      model: "gemini-2.0-flash",
       contents: `Analiza la siguiente entrada de usuario para una aplicación de tareas y extrae la información en formato JSON.
       Entrada: ${sanitizedInput}
       Si el usuario menciona un lugar, extráelo en "suggestedLocationName". Si no, déjalo vacío.
@@ -41,7 +41,7 @@ export const parseTaskWithGemini = async (input: string): Promise<{ title: strin
     // Fallback for demo if API key is missing or fails
     return {
       title: input,
-      description: "Generado automáticamente (Fallback)",
+      description: "Procesado sin IA",
       hasLocation: false
     };
   }

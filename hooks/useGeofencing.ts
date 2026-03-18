@@ -19,11 +19,35 @@ const LOW_ACCURACY_OPTIONS: PositionOptions = {
 export const useGeofencing = (tasks: Task[]) => {
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('triggeredTasks');
+      if (saved) {
+        return new Set(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error("Failed to load triggeredTasks from localStorage", e);
+    }
+    return new Set();
+  });
   const [useHighAccuracy, setUseHighAccuracy] = useState(true);
   
   const watchIdRef = useRef<number | null>(null);
   const lastUpdateRef = useRef<number>(0);
+  const userLocationRef = useRef<GeoLocation | null>(null);
+
+  useEffect(() => {
+    userLocationRef.current = userLocation;
+  }, [userLocation]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('triggeredTasks', JSON.stringify(Array.from(triggeredTasks)));
+    } catch (e) {
+      console.error("Failed to save triggeredTasks to localStorage", e);
+    }
+  }, [triggeredTasks]);
 
   const checkGeofences = () => {
     if (!userLocation) return;
@@ -54,6 +78,7 @@ export const useGeofencing = (tasks: Task[]) => {
     lastUpdateRef.current = now;
     setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
     setLocationError(null);
+    setIsLoading(false);
   };
 
   const handleLocationError = (error: GeolocationPositionError) => {
@@ -63,11 +88,12 @@ export const useGeofencing = (tasks: Task[]) => {
       setUseHighAccuracy(false);
       return;
     }
-    if (!userLocation) {
+    if (!userLocationRef.current) {
       let msg = "No se pudo obtener la ubicación.";
       if (error.code === 1) msg = "Permiso de ubicación denegado.";
       if (error.code === 3) msg = "Tiempo de espera agotado. Muévete a un área despejada.";
       setLocationError(msg);
+      setIsLoading(false);
     }
   };
 
@@ -99,6 +125,7 @@ export const useGeofencing = (tasks: Task[]) => {
   return { 
     userLocation, 
     locationError, 
+    isLoading,
     updateLocation: (lat: number, lng: number) => setUserLocation({ lat, lng }) 
   };
 };

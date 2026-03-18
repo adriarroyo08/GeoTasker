@@ -12,6 +12,7 @@ interface EditTaskModalProps {
 export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onClose, onSave }) => {
   const [title, setTitle] = useState(task?.title || '');
   const [description, setDescription] = useState(task?.description || '');
+  const [dueDate, setDueDate] = useState(task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '');
   const [radius, setRadius] = useState(task?.radius || 200);
 
   if (!isOpen || !task) return null;
@@ -22,6 +23,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
       ...task,
       title,
       description,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
       radius
     });
   };
@@ -41,10 +43,21 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Título</label>
             <input
               type="text"
+              maxLength={100}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha de vencimiento (Opcional)</label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
             />
           </div>
 

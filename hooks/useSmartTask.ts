@@ -36,13 +36,20 @@ export const useSmartTask = ({ addTask, setView }: UseSmartTaskProps) => {
         setIsSelectingLocation(true);
         setView(AppView.MAP);
         setTempLocation(null);
-        alert(`Gemini detectó una ubicación: "${parsed.suggestedLocationName || 'Desconocida'}".\nPor favor, selecciona el punto exacto en el mapa.`);
       } else {
         finalizeTaskCreation(newTask);
       }
     } catch (e) {
       console.error(e);
-      alert("Error al procesar con IA. Intentando modo manual.");
+      // Removed alert, we fall back to manual mode gracefully
+      const fallbackTask: Partial<Task> = {
+        title: newTaskInput,
+        description: "Procesado sin IA",
+        radius: DEFAULT_RADIUS,
+        isCompleted: false,
+        createdAt: Date.now(),
+      };
+      finalizeTaskCreation(fallbackTask);
     } finally {
       setIsProcessing(false);
       setNewTaskInput('');

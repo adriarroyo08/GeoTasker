@@ -33,7 +33,7 @@ const App: React.FC = () => {
     cancelLocation
   } = useSmartTask({ addTask, setView });
 
-  const { userLocation, locationError, updateLocation } = useGeofencing(tasks);
+  const { userLocation, locationError, isLoading: isLocationLoading, updateLocation } = useGeofencing(tasks);
 
   const handleUpdateTask = (updatedTask: Task) => {
     updateTask(updatedTask);
@@ -44,6 +44,7 @@ const App: React.FC = () => {
     <div className="flex flex-col h-[100dvh] bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
       <Header
         locationError={locationError}
+        isLoadingLocation={isLocationLoading}
         darkMode={darkMode}
         toggleTheme={toggleTheme}
       />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Task, GeoLocation } from '../types';
-import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS } from '../constants';
+import { DEFAULT_CENTER, DEFAULT_ICON, USER_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS } from '../constants';
 import { Locate, Loader2 } from 'lucide-react';
 import L from 'leaflet';
 
@@ -19,8 +19,12 @@ interface MapViewProps {
 // Helper to update map view when user location changes
 const RecenterMap: React.FC<{ center: [number, number] }> = ({ center }) => {
   const map = useMap();
+  const hasCentered = React.useRef(false);
   useEffect(() => {
-    map.setView(center, map.getZoom());
+    if (!hasCentered.current) {
+      map.setView(center, map.getZoom());
+      hasCentered.current = true;
+    }
   }, [center, map]);
   return null;
 };
@@ -30,10 +34,11 @@ const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void }> = ({ 
   const map = useMap();
   useEffect(() => {
     if (!map) return;
-    map.on('click', (e) => {
+    const handler = (e: L.LeafletMouseEvent) => {
       onClick(e.latlng.lat, e.latlng.lng);
-    });
-    return () => { map.off('click'); };
+    };
+    map.on('click', handler);
+    return () => { map.off('click', handler); };
   }, [map, onClick]);
   return null;
 };
@@ -69,11 +74,7 @@ const LocateControl: React.FC<{
       (err) => {
         console.error(err);
         setLoading(false);
-        if (err.code === 3) {
-           alert("El GPS tardó demasiado. Intenta moverte a un lugar despejado o espera un momento.");
-        } else {
-           alert("No se pudo obtener la ubicación actual.");
-        }
+        // Header component will handle displaying the error.
       },
       GEOLOCATION_OPTIONS
     );
@@ -135,7 +136,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
         {userLocation && (
           <>
-            <Marker position={[userLocation.lat, userLocation.lng]} icon={DEFAULT_ICON}>
+            <Marker position={[userLocation.lat, userLocation.lng]} icon={USER_ICON || DEFAULT_ICON}>
               <Popup>Tu ubicación actual</Popup>
             </Marker>
             <RecenterMap center={[userLocation.lat, userLocation.lng]} />

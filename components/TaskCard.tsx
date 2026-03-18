@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Task } from '../types';
-import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil, X, Check } from 'lucide-react';
 import { formatDistance, calculateDistance } from '../utils/geo';
 
 interface TaskCardProps {
@@ -13,6 +13,8 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDelete, onEdit }) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   let distanceStr = '';
   if (task.location && userLat !== undefined && userLng !== undefined) {
     const dist = calculateDistance(userLat, userLng, task.location.lat, task.location.lng);
@@ -20,9 +22,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
   }
 
   const handleDelete = () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
-      onDelete(task.id);
-    }
+    onDelete(task.id);
+    setShowDeleteConfirm(false);
   };
 
   // Dynamic base classes depending on completion and dark mode
@@ -86,20 +87,41 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
         </div>
 
         <div className="flex flex-col gap-1">
-          <button 
-            onClick={() => onEdit(task)}
-            className="text-gray-300 hover:text-blue-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-blue-400"
-            aria-label="Editar tarea"
-          >
-            <Pencil size={18} />
-          </button>
-          <button 
-            onClick={handleDelete}
-            className="text-gray-300 hover:text-red-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-red-400"
-            aria-label="Eliminar tarea"
-          >
-            <Trash2 size={18} />
-          </button>
+          {!showDeleteConfirm ? (
+            <>
+              <button
+                onClick={() => onEdit(task)}
+                className="text-gray-300 hover:text-blue-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-blue-400"
+                aria-label="Editar tarea"
+              >
+                <Pencil size={18} />
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="text-gray-300 hover:text-red-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-red-400"
+                aria-label="Eliminar tarea"
+              >
+                <Trash2 size={18} />
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col gap-1 animate-in slide-in-from-right-2">
+              <button
+                onClick={handleDelete}
+                className="bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 p-2 rounded-lg transition-colors flex items-center gap-1 text-xs font-medium"
+                aria-label="Confirmar eliminación"
+              >
+                <Check size={14} /> Confirmar
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 p-2 rounded-lg transition-colors flex items-center gap-1 text-xs font-medium"
+                aria-label="Cancelar eliminación"
+              >
+                <X size={14} /> Cancelar
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
