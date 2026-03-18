@@ -19,11 +19,26 @@ const LOW_ACCURACY_OPTIONS: PositionOptions = {
 export const useGeofencing = (tasks: Task[]) => {
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(new Set());
+  const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set();
+    const stored = localStorage.getItem('geotasker_triggered_tasks');
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  });
   const [useHighAccuracy, setUseHighAccuracy] = useState(true);
   
   const watchIdRef = useRef<number | null>(null);
   const lastUpdateRef = useRef<number>(0);
+  const userLocationRef = useRef<GeoLocation | null>(userLocation);
+
+  useEffect(() => {
+    userLocationRef.current = userLocation;
+  }, [userLocation]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('geotasker_triggered_tasks', JSON.stringify(Array.from(triggeredTasks)));
+    }
+  }, [triggeredTasks]);
 
   const checkGeofences = () => {
     if (!userLocation) return;
@@ -63,7 +78,7 @@ export const useGeofencing = (tasks: Task[]) => {
       setUseHighAccuracy(false);
       return;
     }
-    if (!userLocation) {
+    if (!userLocationRef.current) {
       let msg = "No se pudo obtener la ubicación.";
       if (error.code === 1) msg = "Permiso de ubicación denegado.";
       if (error.code === 3) msg = "Tiempo de espera agotado. Muévete a un área despejada.";
