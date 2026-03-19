@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Task } from '../types';
 import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil } from 'lucide-react';
 import { formatDistance, calculateDistance } from '../utils/geo';
@@ -13,6 +13,15 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDelete, onEdit }) => {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
   let distanceStr = '';
   if (task.location && userLat !== undefined && userLng !== undefined) {
     const dist = calculateDistance(userLat, userLng, task.location.lat, task.location.lng);
@@ -20,8 +29,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
   }
 
   const handleDelete = () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
+    if (confirmDelete) {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       onDelete(task.id);
+    } else {
+      setConfirmDelete(true);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setConfirmDelete(false), 3000);
     }
   };
 
@@ -95,7 +109,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
           </button>
           <button 
             onClick={handleDelete}
-            className="text-gray-300 hover:text-red-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-red-400"
+            className={`transition-colors p-2 ${
+              confirmDelete
+                ? 'text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg'
+                : 'text-gray-300 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-400'
+            }`}
             aria-label="Eliminar tarea"
           >
             <Trash2 size={18} />

@@ -48,12 +48,12 @@ describe('TaskList', () => {
   it('should show task count (only pending)', () => {
     render(<TaskList {...defaultProps} tasks={[sampleTask, completedTask]} />);
     // 1 pending task (completedTask is excluded from count)
-    expect(screen.getByText('Mis Tareas (1)')).toBeTruthy();
+    expect(screen.getByText('Tareas pendientes (1)')).toBeTruthy();
   });
 
   it('should show task count of 0 when all tasks are completed', () => {
     render(<TaskList {...defaultProps} tasks={[completedTask]} />);
-    expect(screen.getByText('Mis Tareas (0)')).toBeTruthy();
+    expect(screen.getByText('Tareas pendientes (0)')).toBeTruthy();
   });
 
   it('should render task titles when tasks exist', () => {
