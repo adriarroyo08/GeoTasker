@@ -71,31 +71,26 @@ describe('TaskCard', () => {
     expect(mockOnEdit).toHaveBeenCalledWith(baseTask);
   });
 
-  it('calls onDelete when delete button is clicked and user confirms', () => {
-    const originalConfirm = window.confirm;
-    window.confirm = vi.fn().mockReturnValue(true);
-
+  it('calls onDelete when delete button is clicked twice (confirmation)', () => {
     render(<TaskCard task={baseTask} onToggle={mockOnToggle} onDelete={mockOnDelete} onEdit={mockOnEdit} />);
     const deleteButton = screen.getByLabelText('Eliminar tarea');
+
+    // First click (enters confirmation state)
     fireEvent.click(deleteButton);
-
-    expect(window.confirm).toHaveBeenCalledWith('¿Estás seguro de que deseas eliminar esta tarea?');
-    expect(mockOnDelete).toHaveBeenCalledWith('1');
-
-    window.confirm = originalConfirm;
-  });
-
-  it('does not call onDelete if user cancels confirm dialog', () => {
-    const originalConfirm = window.confirm;
-    window.confirm = vi.fn().mockReturnValue(false);
-
-    render(<TaskCard task={baseTask} onToggle={mockOnToggle} onDelete={mockOnDelete} onEdit={mockOnEdit} />);
-    const deleteButton = screen.getByLabelText('Eliminar tarea');
-    fireEvent.click(deleteButton);
-
     expect(mockOnDelete).not.toHaveBeenCalled();
 
-    window.confirm = originalConfirm;
+    // Second click (actually deletes)
+    fireEvent.click(deleteButton);
+    expect(mockOnDelete).toHaveBeenCalledWith('1');
+  });
+
+  it('does not call onDelete on first click', () => {
+    render(<TaskCard task={baseTask} onToggle={mockOnToggle} onDelete={mockOnDelete} onEdit={mockOnEdit} />);
+    const deleteButton = screen.getByLabelText('Eliminar tarea');
+
+    // First click only
+    fireEvent.click(deleteButton);
+    expect(mockOnDelete).not.toHaveBeenCalled();
   });
 
   it('renders completed task with line-through styling', () => {
