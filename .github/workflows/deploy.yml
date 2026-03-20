@@ -17,7 +17,7 @@ jobs:
           username: ${{ vars.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/ubuntu/tu-app
+            cd /home/ubuntu/GeoTarker
             git pull origin main
             npm install --production
             npm run build
