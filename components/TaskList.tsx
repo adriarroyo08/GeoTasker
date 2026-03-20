@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Mic, Loader2 } from 'lucide-react';
+import { Plus, Sparkles, Loader2 } from 'lucide-react';
 import { Task, GeoLocation } from '../types';
 import { TaskCard } from './TaskCard';
 
@@ -52,13 +52,13 @@ export const TaskList: React.FC<TaskListProps> = ({
           </button>
         </div>
         <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 flex items-center gap-1">
-          <Mic size={12} />
+          <Sparkles size={12} />
           Intenta: "Recordarme sacar dinero cuando pase por el banco" (Gemini AI Powered)
         </p>
       </div>
 
       {/* Task List */}
-      <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3">Mis Tareas ({tasks.filter(t => !t.isCompleted).length})</h2>
+      <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3">Tareas pendientes ({tasks.filter(t => !t.isCompleted).length})</h2>
       {tasks.length === 0 ? (
         <div className="text-center py-10 text-gray-400 dark:text-gray-500">
           <p>No tienes tareas pendientes.</p>

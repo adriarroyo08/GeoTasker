@@ -17,8 +17,7 @@ export interface Task {
 
 export enum AppView {
   LIST = 'LIST',
-  MAP = 'MAP',
-  ADD = 'ADD'
+  MAP = 'MAP'
 }
 
 export interface GeofenceEvent {

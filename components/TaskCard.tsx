@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Task } from '../types';
-import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil, X } from 'lucide-react';
 import { formatDistance, calculateDistance } from '../utils/geo';
 
 interface TaskCardProps {
@@ -13,16 +13,23 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDelete, onEdit }) => {
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   let distanceStr = '';
   if (task.location && userLat !== undefined && userLng !== undefined) {
     const dist = calculateDistance(userLat, userLng, task.location.lat, task.location.lng);
     distanceStr = formatDistance(dist);
   }
 
-  const handleDelete = () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
-      onDelete(task.id);
-    }
+  const handleDeleteClick = () => {
+    setIsConfirmingDelete(true);
+  };
+
+  const confirmDelete = () => {
+    onDelete(task.id);
+  };
+
+  const cancelDelete = () => {
+    setIsConfirmingDelete(false);
   };
 
   // Dynamic base classes depending on completion and dark mode
@@ -86,20 +93,42 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
         </div>
 
         <div className="flex flex-col gap-1">
-          <button 
-            onClick={() => onEdit(task)}
-            className="text-gray-300 hover:text-blue-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-blue-400"
-            aria-label="Editar tarea"
-          >
-            <Pencil size={18} />
-          </button>
-          <button 
-            onClick={handleDelete}
-            className="text-gray-300 hover:text-red-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-red-400"
-            aria-label="Eliminar tarea"
-          >
-            <Trash2 size={18} />
-          </button>
+          {isConfirmingDelete ? (
+            <div className="flex flex-col gap-2">
+              <span className="text-xs text-red-500 font-bold px-1">¿Borrar?</span>
+              <button
+                onClick={confirmDelete}
+                className="bg-red-500 text-white text-xs py-1 px-2 rounded hover:bg-red-600 transition-colors"
+                aria-label="Confirmar eliminar"
+              >
+                Sí
+              </button>
+              <button
+                onClick={cancelDelete}
+                className="bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-white text-xs py-1 px-2 rounded hover:bg-gray-300 transition-colors"
+                aria-label="Cancelar eliminar"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={() => onEdit(task)}
+                className="text-gray-300 hover:text-blue-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-blue-400"
+                aria-label="Editar tarea"
+              >
+                <Pencil size={18} />
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                className="text-gray-300 hover:text-red-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-red-400"
+                aria-label="Eliminar tarea"
+              >
+                <Trash2 size={18} />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
