@@ -72,30 +72,25 @@ describe('TaskCard', () => {
   });
 
   it('calls onDelete when delete button is clicked and user confirms', () => {
-    const originalConfirm = window.confirm;
-    window.confirm = vi.fn().mockReturnValue(true);
-
     render(<TaskCard task={baseTask} onToggle={mockOnToggle} onDelete={mockOnDelete} onEdit={mockOnEdit} />);
     const deleteButton = screen.getByLabelText('Eliminar tarea');
     fireEvent.click(deleteButton);
 
-    expect(window.confirm).toHaveBeenCalledWith('¿Estás seguro de que deseas eliminar esta tarea?');
-    expect(mockOnDelete).toHaveBeenCalledWith('1');
+    const confirmButton = screen.getByText('Eliminar');
+    fireEvent.click(confirmButton);
 
-    window.confirm = originalConfirm;
+    expect(mockOnDelete).toHaveBeenCalledWith('1');
   });
 
   it('does not call onDelete if user cancels confirm dialog', () => {
-    const originalConfirm = window.confirm;
-    window.confirm = vi.fn().mockReturnValue(false);
-
     render(<TaskCard task={baseTask} onToggle={mockOnToggle} onDelete={mockOnDelete} onEdit={mockOnEdit} />);
     const deleteButton = screen.getByLabelText('Eliminar tarea');
     fireEvent.click(deleteButton);
 
-    expect(mockOnDelete).not.toHaveBeenCalled();
+    const cancelButton = screen.getByText('Cancelar');
+    fireEvent.click(cancelButton);
 
-    window.confirm = originalConfirm;
+    expect(mockOnDelete).not.toHaveBeenCalled();
   });
 
   it('renders completed task with line-through styling', () => {
