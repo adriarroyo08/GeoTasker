@@ -48,9 +48,10 @@ describe('parseTaskWithGemini', () => {
       suggestedLocationName: "supermercado de la esquina"
     });
 
-    // Check that sanitization doesn't modify a normal string
+    // Check that sanitization doesn't modify a normal string and uses the correct model
     expect(mockGenerateContent).toHaveBeenCalledWith(
       expect.objectContaining({
+        model: "gemini-2.0-flash",
         contents: expect.stringContaining(input)
       })
     );

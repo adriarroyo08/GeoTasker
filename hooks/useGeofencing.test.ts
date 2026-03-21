@@ -219,4 +219,29 @@ describe('useGeofencing', () => {
     // Notification should only fire once despite two position updates
     expect(Notifications.triggerGeofenceNotification).toHaveBeenCalledTimes(1);
   });
+
+  it('should avoid stale closure and not set location error if userLocation was updated', () => {
+    const { result } = renderHook(() => useGeofencing([]));
+
+    // Initially watchPosition is called
+    const successCallback = watchPositionMock.mock.calls[0][0];
+    const errorCallback = watchPositionMock.mock.calls[0][1];
+
+    act(() => {
+      // Simulate getting a valid location
+      vi.setSystemTime(new Date(3000));
+      successCallback({ coords: { latitude: 40.7128, longitude: -74.0060 } } as GeolocationPosition);
+    });
+
+    expect(result.current.userLocation).toEqual({ lat: 40.7128, lng: -74.0060 });
+
+    act(() => {
+      // Simulate an error coming from the *initial* watchPosition registration
+      errorCallback({ code: 1, message: 'Permission denied' } as GeolocationPositionError);
+    });
+
+    // Because userLocationRef.current is not null, the error should NOT overwrite the state
+    // with a generic "No se pudo obtener la ubicación" message that only applies to initial failures
+    expect(result.current.locationError).toBeNull();
+  });
 });
