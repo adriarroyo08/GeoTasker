@@ -15,10 +15,12 @@ export const useSmartTask = ({ addTask, setView }: UseSmartTaskProps) => {
   const [pendingTask, setPendingTask] = useState<Partial<Task> | null>(null);
   const [isSelectingLocation, setIsSelectingLocation] = useState(false);
   const [tempLocation, setTempLocation] = useState<GeoLocation | null>(null);
+  const [smartAddMessage, setSmartAddMessage] = useState<string | null>(null);
 
   const handleSmartAdd = async () => {
     if (!newTaskInput.trim()) return;
     setIsProcessing(true);
+    setSmartAddMessage(null);
 
     try {
       const parsed = await parseTaskWithGemini(newTaskInput);
@@ -36,13 +38,13 @@ export const useSmartTask = ({ addTask, setView }: UseSmartTaskProps) => {
         setIsSelectingLocation(true);
         setView(AppView.MAP);
         setTempLocation(null);
-        alert(`Gemini detectó una ubicación: "${parsed.suggestedLocationName || 'Desconocida'}".\nPor favor, selecciona el punto exacto en el mapa.`);
+        setSmartAddMessage(`Gemini detectó una ubicación: "${parsed.suggestedLocationName || 'Desconocida'}"`);
       } else {
         finalizeTaskCreation(newTask);
       }
     } catch (e) {
       console.error(e);
-      alert("Error al procesar con IA. Intentando modo manual.");
+      setSmartAddMessage("Error al procesar con IA. Intentando modo manual.");
     } finally {
       setIsProcessing(false);
       setNewTaskInput('');
@@ -83,6 +85,7 @@ export const useSmartTask = ({ addTask, setView }: UseSmartTaskProps) => {
     setIsSelectingLocation(false);
     setPendingTask(null);
     setTempLocation(null);
+    setSmartAddMessage(null);
     setView(AppView.LIST);
   };
 
@@ -93,6 +96,7 @@ export const useSmartTask = ({ addTask, setView }: UseSmartTaskProps) => {
     pendingTask,
     isSelectingLocation,
     tempLocation,
+    smartAddMessage,
     handleSmartAdd,
     handleMapClick,
     confirmLocation,

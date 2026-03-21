@@ -28,6 +28,7 @@ const App: React.FC = () => {
     pendingTask,
     isSelectingLocation,
     tempLocation,
+    smartAddMessage,
     handleMapClick,
     confirmLocation,
     cancelLocation
@@ -66,6 +67,14 @@ const App: React.FC = () => {
 
         {view === AppView.MAP && (
           <div className="flex-1 relative">
+            {smartAddMessage && isSelectingLocation && (
+              <div className="absolute top-16 left-1/2 transform -translate-x-1/2 z-[1000] w-[90%] max-w-md">
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 dark:bg-blue-900/50 dark:border-blue-800 dark:text-blue-200 px-4 py-3 rounded-xl shadow-lg text-sm text-center">
+                  <p className="font-semibold mb-1">{smartAddMessage}</p>
+                  <p className="text-xs opacity-90">Por favor, selecciona el punto exacto en el mapa.</p>
+                </div>
+              </div>
+            )}
             <MapView 
               tasks={tasks} 
               userLocation={userLocation} 

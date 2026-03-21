@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Task } from '../types';
-import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil, AlertTriangle } from 'lucide-react';
 import { formatDistance, calculateDistance } from '../utils/geo';
 
 interface TaskCardProps {
@@ -13,6 +13,7 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDelete, onEdit }) => {
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   let distanceStr = '';
   if (task.location && userLat !== undefined && userLng !== undefined) {
     const dist = calculateDistance(userLat, userLng, task.location.lat, task.location.lng);
@@ -20,9 +21,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
   }
 
   const handleDelete = () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
-      onDelete(task.id);
-    }
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = () => {
+    onDelete(task.id);
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
   };
 
   // Dynamic base classes depending on completion and dark mode
@@ -35,7 +42,29 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
     : 'text-gray-800 dark:text-white';
 
   return (
-    <div className={`p-4 mb-3 rounded-xl shadow-sm border transition-all ${baseClasses}`}>
+    <div className={`p-4 mb-3 rounded-xl shadow-sm border transition-all relative overflow-hidden ${baseClasses}`}>
+      {showConfirmDelete && (
+        <div className="absolute inset-0 z-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm flex flex-col items-center justify-center p-4 animate-in fade-in">
+          <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-medium mb-3">
+            <AlertTriangle size={20} />
+            <span>¿Eliminar esta tarea?</span>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={cancelDelete}
+              className="px-4 py-2 text-sm bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={confirmDelete}
+              className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+      )}
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3 flex-1">
           <button 

@@ -43,6 +43,7 @@ describe('useGeofencing', () => {
     vi.useFakeTimers();
     watchPositionMock.mockReturnValue(123); // Mock watch ID
     (Notifications.requestNotificationPermission as any).mockResolvedValue('granted');
+    localStorage.clear();
   });
 
   afterEach(() => {
@@ -203,7 +204,7 @@ describe('useGeofencing', () => {
   });
 
   it('should not trigger the same geofence notification twice', () => {
-    renderHook(() => useGeofencing(mockTasks));
+    const { rerender } = renderHook(() => useGeofencing(mockTasks));
     const successCallback = watchPositionMock.mock.calls[0][0];
 
     act(() => {
@@ -211,10 +212,15 @@ describe('useGeofencing', () => {
       successCallback({ coords: { latitude: 40.7128, longitude: -74.0060 } } as GeolocationPosition);
     });
 
+    // Need to wait for useEffect to trigger checkGeofences
+    rerender();
+
     act(() => {
       vi.setSystemTime(new Date(6000));
       successCallback({ coords: { latitude: 40.7128, longitude: -74.0060 } } as GeolocationPosition);
     });
+
+    rerender();
 
     // Notification should only fire once despite two position updates
     expect(Notifications.triggerGeofenceNotification).toHaveBeenCalledTimes(1);
