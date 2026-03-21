@@ -109,6 +109,18 @@ export const MapView: React.FC<MapViewProps> = ({
   previewRadius = 200,
   isDarkMode = false
 }) => {
+  const initialCenterRef = React.useRef(false);
+  const [shouldRecenter, setShouldRecenter] = useState(false);
+
+  useEffect(() => {
+    if (userLocation && !initialCenterRef.current) {
+      initialCenterRef.current = true;
+      setShouldRecenter(true);
+    } else if (shouldRecenter) {
+      setShouldRecenter(false);
+    }
+  }, [userLocation, shouldRecenter]);
+
   const center: [number, number] = userLocation 
     ? [userLocation.lat, userLocation.lng] 
     : [DEFAULT_CENTER.lat, DEFAULT_CENTER.lng];
@@ -138,7 +150,9 @@ export const MapView: React.FC<MapViewProps> = ({
             <Marker position={[userLocation.lat, userLocation.lng]} icon={DEFAULT_ICON}>
               <Popup>Tu ubicación actual</Popup>
             </Marker>
-            <RecenterMap center={[userLocation.lat, userLocation.lng]} />
+            {shouldRecenter && (
+              <RecenterMap center={[userLocation.lat, userLocation.lng]} />
+            )}
           </>
         )}
 
