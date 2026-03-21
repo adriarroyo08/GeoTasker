@@ -171,6 +171,33 @@ describe('useGeofencing', () => {
     expect(result.current.locationError).toBe('Permiso de ubicación denegado.');
   });
 
+  it('should use the latest user location when handling location error (prevent stale closure)', () => {
+    const { result } = renderHook(() => useGeofencing([]));
+    const successCallback = watchPositionMock.mock.calls[0][0];
+    const errorCallback = watchPositionMock.mock.calls[0][1];
+
+    act(() => {
+      vi.setSystemTime(new Date(3000));
+      successCallback({
+        coords: { latitude: 40.7128, longitude: -74.0060 }
+      } as GeolocationPosition);
+    });
+
+    // At this point, userLocation is NOT null (it's 40.7128, -74.0060)
+    expect(result.current.userLocation).not.toBeNull();
+
+    act(() => {
+      // Simulate an error like Timeout (code 3).
+      // In the old code with the stale closure, !userLocation would be true
+      // because the callback would close over the initial null userLocation.
+      errorCallback({ code: 1, message: 'Permission denied' } as GeolocationPositionError);
+    });
+
+    // Because userLocationRef.current is updated, the error message should NOT be set
+    // if the user already has a known location
+    expect(result.current.locationError).toBeNull();
+  });
+
   it('should throttle location updates within 2000ms', () => {
     const { result } = renderHook(() => useGeofencing([]));
     const successCallback = watchPositionMock.mock.calls[0][0];

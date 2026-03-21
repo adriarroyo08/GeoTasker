@@ -51,6 +51,7 @@ describe('parseTaskWithGemini', () => {
     // Check that sanitization doesn't modify a normal string
     expect(mockGenerateContent).toHaveBeenCalledWith(
       expect.objectContaining({
+        model: 'gemini-2.0-flash',
         contents: expect.stringContaining(input)
       })
     );
@@ -74,6 +75,7 @@ describe('parseTaskWithGemini', () => {
     // Assert that the API was called with the sanitized string
     expect(mockGenerateContent).toHaveBeenCalledWith(
       expect.objectContaining({
+        model: 'gemini-2.0-flash',
         contents: expect.stringContaining(expectedSanitized)
       })
     );
