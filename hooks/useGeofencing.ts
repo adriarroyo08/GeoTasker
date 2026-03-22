@@ -24,7 +24,7 @@ export const useGeofencing = (tasks: Task[]) => {
   
   const watchIdRef = useRef<number | null>(null);
   const lastUpdateRef = useRef<number>(0);
-  const userLocationRef = useRef<GeoLocation | null>(null);
+  const userLocationRef = useRef(userLocation);
 
   useEffect(() => {
     userLocationRef.current = userLocation;

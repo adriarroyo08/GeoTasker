@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Task, GeoLocation } from '../types';
 import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS } from '../constants';
@@ -19,7 +19,7 @@ interface MapViewProps {
 // Helper to update map view when user location changes
 const RecenterMap: React.FC<{ center: [number, number] }> = ({ center }) => {
   const map = useMap();
-  const hasCentered = React.useRef(false);
+  const hasCentered = useRef(false);
   useEffect(() => {
     if (!hasCentered.current) {
       map.setView(center, map.getZoom());
