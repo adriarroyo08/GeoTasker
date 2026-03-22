@@ -8,11 +8,11 @@ interface TaskCardProps {
   userLat?: number;
   userLng?: number;
   onToggle: (id: string) => void;
-  onDelete: (id: string) => void;
+  onDeleteClick: (id: string) => void;
   onEdit: (task: Task) => void;
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDelete, onEdit }) => {
+export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDeleteClick, onEdit }) => {
   let distanceStr = '';
   if (task.location && userLat !== undefined && userLng !== undefined) {
     const dist = calculateDistance(userLat, userLng, task.location.lat, task.location.lng);
@@ -20,9 +20,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
   }
 
   const handleDelete = () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
-      onDelete(task.id);
-    }
+    onDeleteClick(task.id);
   };
 
   // Dynamic base classes depending on completion and dark mode
