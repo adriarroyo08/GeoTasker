@@ -19,8 +19,12 @@ interface MapViewProps {
 // Helper to update map view when user location changes
 const RecenterMap: React.FC<{ center: [number, number] }> = ({ center }) => {
   const map = useMap();
+  const hasCentered = React.useRef(false);
   useEffect(() => {
-    map.setView(center, map.getZoom());
+    if (!hasCentered.current) {
+      map.setView(center, map.getZoom());
+      hasCentered.current = true;
+    }
   }, [center, map]);
   return null;
 };
@@ -70,9 +74,9 @@ const LocateControl: React.FC<{
         console.error(err);
         setLoading(false);
         if (err.code === 3) {
-           alert("El GPS tardó demasiado. Intenta moverte a un lugar despejado o espera un momento.");
+           console.warn("El GPS tardó demasiado. Intenta moverte a un lugar despejado o espera un momento.");
         } else {
-           alert("No se pudo obtener la ubicación actual.");
+           console.warn("No se pudo obtener la ubicación actual.");
         }
       },
       GEOLOCATION_OPTIONS
