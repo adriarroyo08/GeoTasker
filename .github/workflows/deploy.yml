@@ -19,6 +19,6 @@ jobs:
           script: |
             cd /home/ubuntu/GeoTasker
             git pull origin main
-            npm install --production
+            npm ci
             npm run build
             pm2 restart app-name
