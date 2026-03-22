@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, Mic, Loader2 } from 'lucide-react';
 import { Task, GeoLocation } from '../types';
 import { TaskCard } from './TaskCard';
+import { ConfirmModal } from './ConfirmModal';
 
 interface TaskListProps {
   tasks: Task[];
@@ -26,6 +27,8 @@ export const TaskList: React.FC<TaskListProps> = ({
   deleteTask,
   setEditingTask,
 }) => {
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+
   return (
     <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full">
       {/* Input Area */}
@@ -72,11 +75,24 @@ export const TaskList: React.FC<TaskListProps> = ({
             userLat={userLocation?.lat}
             userLng={userLocation?.lng}
             onToggle={toggleTask}
-            onDelete={deleteTask}
+            onDeleteClick={setTaskToDelete}
             onEdit={setEditingTask}
           />
         ))
       )}
+
+      <ConfirmModal
+        isOpen={!!taskToDelete}
+        title="Eliminar tarea"
+        message="¿Estás seguro de que deseas eliminar esta tarea?"
+        onConfirm={() => {
+          if (taskToDelete) {
+            deleteTask(taskToDelete);
+            setTaskToDelete(null);
+          }
+        }}
+        onCancel={() => setTaskToDelete(null)}
+      />
     </div>
   );
 };
