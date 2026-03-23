@@ -230,7 +230,8 @@ describe('useGeofencing', () => {
   });
 
   it('should not trigger the same geofence notification twice', () => {
-    renderHook(() => useGeofencing(mockTasks));
+    localStorage.clear();
+    const { rerender } = renderHook((props) => useGeofencing(props), { initialProps: mockTasks });
     const successCallback = watchPositionMock.mock.calls[0][0];
 
     act(() => {
@@ -245,5 +246,26 @@ describe('useGeofencing', () => {
 
     // Notification should only fire once despite two position updates
     expect(Notifications.triggerGeofenceNotification).toHaveBeenCalledTimes(1);
+  });
+
+  it('initializes triggeredTasks from localStorage', () => {
+    localStorage.setItem('geotasker_triggered_tasks', JSON.stringify(['1']));
+    const { result } = renderHook(() => useGeofencing([]));
+    expect(localStorage.getItem('geotasker_triggered_tasks')).toBe(JSON.stringify(['1']));
+  });
+
+  it('updates triggeredTasks in localStorage when tasks trigger', () => {
+    const { result } = renderHook(() => useGeofencing(mockTasks));
+    const successCallback = watchPositionMock.mock.calls[0][0];
+
+    act(() => {
+      vi.setSystemTime(new Date(3000));
+      successCallback({ coords: { latitude: 40.7128, longitude: -74.0060 } } as GeolocationPosition);
+    });
+
+    const saved = localStorage.getItem('geotasker_triggered_tasks');
+    expect(saved).toBeTruthy();
+    const parsed = JSON.parse(saved || '[]');
+    expect(parsed).toContain('1');
   });
 });

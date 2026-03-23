@@ -16,6 +16,13 @@ export const DEFAULT_ICON = L.icon({
   iconAnchor: [12, 41],
 });
 
+export const USER_ICON = L.divIcon({
+  className: 'custom-user-icon',
+  html: `<div class="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-[0_0_10px_rgba(37,99,235,0.8)] relative before:content-[''] before:absolute before:inset-0 before:bg-blue-600 before:rounded-full before:animate-ping before:opacity-75"></div>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8]
+});
+
 export const COMPLETED_ICON = L.icon({
   iconUrl: '/images/marker-icon-green.png',
   shadowUrl: '/images/marker-shadow.png', // Using the same shadow is fine
