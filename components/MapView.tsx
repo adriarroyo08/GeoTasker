@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Task, GeoLocation } from '../types';
-import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS } from '../constants';
+import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS, USER_ICON } from '../constants';
 import { Locate, Loader2 } from 'lucide-react';
 import L from 'leaflet';
 
@@ -34,10 +34,11 @@ const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void }> = ({ 
   const map = useMap();
   useEffect(() => {
     if (!map) return;
-    map.on('click', (e) => {
+    const handler = (e: any) => {
       onClick(e.latlng.lat, e.latlng.lng);
-    });
-    return () => { map.off('click'); };
+    };
+    map.on('click', handler);
+    return () => { map.off('click', handler); };
   }, [map, onClick]);
   return null;
 };
@@ -139,7 +140,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
         {userLocation && (
           <>
-            <Marker position={[userLocation.lat, userLocation.lng]} icon={DEFAULT_ICON}>
+            <Marker position={[userLocation.lat, userLocation.lng]} icon={USER_ICON}>
               <Popup>Tu ubicación actual</Popup>
             </Marker>
             <RecenterMap center={[userLocation.lat, userLocation.lng]} />
