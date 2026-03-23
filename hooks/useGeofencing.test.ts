@@ -230,6 +230,9 @@ describe('useGeofencing', () => {
   });
 
   it('should not trigger the same geofence notification twice', () => {
+    // Clear localStorage to prevent state leakage from previous tests
+    localStorage.clear();
+
     renderHook(() => useGeofencing(mockTasks));
     const successCallback = watchPositionMock.mock.calls[0][0];
 

@@ -19,7 +19,17 @@ const LOW_ACCURACY_OPTIONS: PositionOptions = {
 export const useGeofencing = (tasks: Task[]) => {
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(new Set());
+  const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('triggeredTasks');
+    if (saved) {
+      try {
+        return new Set(JSON.parse(saved));
+      } catch (e) {
+        return new Set();
+      }
+    }
+    return new Set();
+  });
   const [useHighAccuracy, setUseHighAccuracy] = useState(true);
   
   const watchIdRef = useRef<number | null>(null);
@@ -52,6 +62,10 @@ export const useGeofencing = (tasks: Task[]) => {
   useEffect(() => {
     checkGeofences();
   }, [userLocation, tasks, triggeredTasks]);
+
+  useEffect(() => {
+    localStorage.setItem('triggeredTasks', JSON.stringify(Array.from(triggeredTasks)));
+  }, [triggeredTasks]);
 
   const handleLocationSuccess = (position: GeolocationPosition) => {
     const now = Date.now();
