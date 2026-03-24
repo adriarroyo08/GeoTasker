@@ -89,7 +89,7 @@ describe('parseTaskWithGemini', () => {
 
     expect(result).toEqual({
       title: input,
-      description: "Generado automáticamente (Fallback)",
+      description: "Generado automáticamente",
       hasLocation: false
     });
   });
@@ -102,7 +102,7 @@ describe('parseTaskWithGemini', () => {
 
     expect(result).toEqual({
       title: input,
-      description: "Generado automáticamente (Fallback)",
+      description: "Generado automáticamente",
       hasLocation: false
     });
   });
@@ -115,7 +115,7 @@ describe('parseTaskWithGemini', () => {
 
     expect(result).toEqual({
       title: input,
-      description: "Generado automáticamente (Fallback)",
+      description: "Generado automáticamente",
       hasLocation: false
     });
   });

@@ -16,10 +16,23 @@ const LOW_ACCURACY_OPTIONS: PositionOptions = {
   maximumAge: 60000
 };
 
+const TRIGGERED_TASKS_KEY = 'geotasker_triggered_tasks';
+
 export const useGeofencing = (tasks: Task[]) => {
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(new Set());
+  const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(TRIGGERED_TASKS_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return new Set(parsed);
+      }
+    } catch (e) {
+      console.error('Failed to parse triggered tasks from localStorage', e);
+    }
+    return new Set();
+  });
   const [useHighAccuracy, setUseHighAccuracy] = useState(true);
   
   const watchIdRef = useRef<number | null>(null);
@@ -43,6 +56,11 @@ export const useGeofencing = (tasks: Task[]) => {
         setTriggeredTasks(prev => {
           const next = new Set(prev);
           next.add(task.id);
+          try {
+            localStorage.setItem(TRIGGERED_TASKS_KEY, JSON.stringify(Array.from(next)));
+          } catch (e) {
+            console.error('Failed to save triggered tasks to localStorage', e);
+          }
           return next;
         });
       }
