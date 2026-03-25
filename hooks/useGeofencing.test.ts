@@ -47,6 +47,7 @@ describe('useGeofencing', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    localStorage.clear();
   });
 
   it('should initialize and request notification permission', () => {

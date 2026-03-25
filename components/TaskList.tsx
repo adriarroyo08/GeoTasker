@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Mic, Loader2 } from 'lucide-react';
+import { Plus, Sparkles, Loader2 } from 'lucide-react';
 import { Task, GeoLocation } from '../types';
 import { TaskCard } from './TaskCard';
 import { ConfirmModal } from './ConfirmModal';
@@ -40,6 +40,7 @@ export const TaskList: React.FC<TaskListProps> = ({
           <input
             type="text"
             value={newTaskInput}
+            maxLength={100}
             onChange={(e) => setNewTaskInput(e.target.value)}
             placeholder="Ej: Comprar leche en Walmart..."
             className="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
@@ -55,13 +56,13 @@ export const TaskList: React.FC<TaskListProps> = ({
           </button>
         </div>
         <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 flex items-center gap-1">
-          <Mic size={12} />
+          <Sparkles size={12} />
           Intenta: "Recordarme sacar dinero cuando pase por el banco" (Gemini AI Powered)
         </p>
       </div>
 
       {/* Task List */}
-      <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3">Mis Tareas ({tasks.filter(t => !t.isCompleted).length})</h2>
+      <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3">Tareas pendientes ({tasks.filter(t => !t.isCompleted).length})</h2>
       {tasks.length === 0 ? (
         <div className="text-center py-10 text-gray-400 dark:text-gray-500">
           <p>No tienes tareas pendientes.</p>
