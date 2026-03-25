@@ -19,7 +19,17 @@ const LOW_ACCURACY_OPTIONS: PositionOptions = {
 export const useGeofencing = (tasks: Task[]) => {
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(new Set());
+  const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('geotasker_triggered');
+      if (stored) {
+        return new Set(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Failed to parse triggeredTasks from localStorage", e);
+    }
+    return new Set();
+  });
   const [useHighAccuracy, setUseHighAccuracy] = useState(true);
   
   const watchIdRef = useRef<number | null>(null);
@@ -48,6 +58,10 @@ export const useGeofencing = (tasks: Task[]) => {
       }
     });
   };
+
+  useEffect(() => {
+    localStorage.setItem('geotasker_triggered', JSON.stringify(Array.from(triggeredTasks)));
+  }, [triggeredTasks]);
 
   useEffect(() => {
     checkGeofences();
