@@ -41,7 +41,7 @@ export const parseTaskWithGemini = async (input: string): Promise<{ title: strin
     // Fallback for demo if API key is missing or fails
     return {
       title: input,
-      description: "Generado automáticamente (Fallback)",
+      description: "Generado automáticamente",
       hasLocation: false
     };
   }

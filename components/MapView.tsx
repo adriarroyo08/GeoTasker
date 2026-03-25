@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Task, GeoLocation } from '../types';
-import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS } from '../constants';
+import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS, USER_ICON } from '../constants';
 import { Locate, Loader2 } from 'lucide-react';
 import L from 'leaflet';
 
@@ -34,10 +34,11 @@ const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void }> = ({ 
   const map = useMap();
   useEffect(() => {
     if (!map) return;
-    map.on('click', (e) => {
+    const handler = (e: any) => {
       onClick(e.latlng.lat, e.latlng.lng);
-    });
-    return () => { map.off('click'); };
+    };
+    map.on('click', handler);
+    return () => { map.off('click', handler); };
   }, [map, onClick]);
   return null;
 };
@@ -127,6 +128,12 @@ export const MapView: React.FC<MapViewProps> = ({
 
   return (
     <div className={`h-full w-full rounded-xl overflow-hidden shadow-inner border relative ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200'}`}>
+      {!userLocation && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full shadow-lg text-sm font-semibold pointer-events-none flex items-center gap-2 border dark:border-gray-700">
+          <Loader2 className="animate-spin text-blue-500" size={16} />
+          <span>Obteniendo tu ubicación...</span>
+        </div>
+      )}
       <MapContainer 
         center={center} 
         zoom={15} 
@@ -139,7 +146,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
         {userLocation && (
           <>
-            <Marker position={[userLocation.lat, userLocation.lng]} icon={DEFAULT_ICON}>
+            <Marker position={[userLocation.lat, userLocation.lng]} icon={USER_ICON}>
               <Popup>Tu ubicación actual</Popup>
             </Marker>
             <RecenterMap center={[userLocation.lat, userLocation.lng]} />
@@ -198,13 +205,13 @@ export const MapView: React.FC<MapViewProps> = ({
       </MapContainer>
       
       {selectingLocation && !previewLocation && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold animate-bounce pointer-events-none">
+        <div className="absolute top-16 left-1/2 transform -translate-x-1/2 z-[1000] bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold animate-bounce pointer-events-none">
           Toca el mapa para seleccionar ubicación
         </div>
       )}
 
       {selectingLocation && previewLocation && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-cyan-600 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold pointer-events-none flex items-center gap-2">
+        <div className="absolute top-16 left-1/2 transform -translate-x-1/2 z-[1000] bg-cyan-600 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold pointer-events-none flex items-center gap-2">
           <span>Ubicación marcada</span>
           <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
         </div>
