@@ -21,4 +21,4 @@ jobs:
             git pull origin main
             npm ci
             npm run build
-            npx pm2 startOrRestart ecosystem.config.js --env production
+            npx pm2 startOrRestart ecosystem.config.cjs --env production
