@@ -1,5 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { parseTaskWithGemini } from './gemini';
+
+const MOCK_DATE = new Date('2023-10-15T12:00:00Z');
 
 // Mock environment variable used by Vite
 vi.stubEnv('VITE_GEMINI_API_KEY', 'test_key');
@@ -25,6 +27,12 @@ vi.mock('@google/genai', () => {
 describe('parseTaskWithGemini', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(MOCK_DATE);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should successfully parse a valid input with location', async () => {
@@ -55,6 +63,31 @@ describe('parseTaskWithGemini', () => {
         contents: expect.stringContaining(input)
       })
     );
+    // Check that the current date is passed to the prompt
+    expect(mockGenerateContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contents: expect.stringContaining(MOCK_DATE.toISOString())
+      })
+    );
+  });
+
+  it('should successfully parse a valid input with location and relative dueDate', async () => {
+    const input = 'Recordarme comprar pan mañana en la panadería';
+    const expectedOutput = {
+      title: 'Comprar pan',
+      description: 'Recordatorio',
+      hasLocation: true,
+      suggestedLocationName: 'panadería',
+      dueDate: '2023-10-16T12:00:00.000Z'
+    };
+
+    mockGenerateContent.mockResolvedValueOnce({
+      text: JSON.stringify(expectedOutput)
+    });
+
+    const result = await parseTaskWithGemini(input);
+
+    expect(result).toEqual(expectedOutput);
   });
 
   it('should sanitize input containing quotes and backslashes', async () => {
