@@ -11,7 +11,7 @@ interface BottomNavProps {
 
 export const BottomNav: React.FC<BottomNavProps> = ({ view, setView, isSelectingLocation, cancelLocation }) => {
   return (
-    <nav className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 pt-3 pb-[calc(0.75rem_+_env(safe-area-inset-bottom))] flex justify-around items-center z-20 transition-colors">
+    <nav className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 pt-3 pb-safe flex justify-around items-center z-20 transition-colors">
       <button
         onClick={() => {
           setView(AppView.LIST);
