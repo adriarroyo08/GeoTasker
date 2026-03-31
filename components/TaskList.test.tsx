@@ -122,4 +122,18 @@ describe('TaskList', () => {
     expect(screen.getByText('Buy groceries')).toBeTruthy();
     expect(screen.getByText('Second task')).toBeTruthy();
   });
+
+  it('should memoize pending tasks count and re-calculate only when tasks change', () => {
+    const { rerender } = render(<TaskList {...defaultProps} tasks={[sampleTask, completedTask]} newTaskInput="Initial" />);
+    // Check initial count
+    expect(screen.getByText('Tareas pendientes (1)')).toBeTruthy();
+
+    // Rerender with different primitive props but same tasks array reference
+    rerender(<TaskList {...defaultProps} tasks={[sampleTask, completedTask]} newTaskInput="Changed" />);
+    expect(screen.getByText('Tareas pendientes (1)')).toBeTruthy();
+
+    // Rerender with new tasks array
+    rerender(<TaskList {...defaultProps} tasks={[completedTask]} newTaskInput="Changed" />);
+    expect(screen.getByText('Tareas pendientes (0)')).toBeTruthy();
+  });
 });
