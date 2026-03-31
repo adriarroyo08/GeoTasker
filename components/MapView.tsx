@@ -127,7 +127,7 @@ export const MapView: React.FC<MapViewProps> = ({
     : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
   return (
-    <div className={`h-full w-full rounded-xl overflow-hidden shadow-inner border relative ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200'}`}>
+    <div className={`h-full w-full overflow-hidden shadow-inner border relative ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200'}`}>
       {!userLocation && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full shadow-lg text-sm font-semibold pointer-events-none flex items-center gap-2 border dark:border-gray-700">
           <Loader2 className="animate-spin text-blue-500" size={16} />
