@@ -8,4 +8,23 @@ html, body, #root {
   overscroll-behavior-y: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
+
+/* Prevent iOS text size adjust */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Ensure inputs don't trigger zoom on iOS (min 16px) */
+input, textarea, select {
+  font-size: 16px;
+}
+
+/* Safe scroll padding for bottom nav */
+.scroll-pb-safe {
+  scroll-padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+}
+
