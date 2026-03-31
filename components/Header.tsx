@@ -9,7 +9,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ locationError, darkMode, toggleTheme }) => {
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm px-4 pb-3 pt-[calc(0.75rem_+_env(safe-area-inset-top))] z-10 flex justify-between items-center transition-colors">
+    <header className="bg-white dark:bg-gray-800 shadow-sm px-4 pb-3 pt-safe z-10 flex justify-between items-center transition-colors">
       <div className="flex items-center gap-2">
         <div className="bg-blue-600 p-2 rounded-lg text-white">
           <Navigation size={20} />
