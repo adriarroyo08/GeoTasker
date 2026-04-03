@@ -9,7 +9,7 @@ La aplicación permite a los usuarios crear tareas utilizando lenguaje natural (
 ## 🚀 Características Principales
 
 ### 🧠 1. Creación de Tareas con IA (Smart Add)
-Utiliza la API de **Google Gemini 3 Flash** para interpretar comandos de lenguaje natural.
+Utiliza la API de **Google Gemini 2.0 Flash** para interpretar comandos de lenguaje natural.
 - **Entrada:** "Comprar medicinas en la farmacia del centro"
 - **Procesamiento:** La IA extrae el título ("Comprar medicinas"), la intención de ubicación ("farmacia del centro") y sugiere coordenadas.
 - **Resultado:** Una tarea geolocalizada lista para confirmar.
