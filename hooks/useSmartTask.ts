@@ -29,6 +29,7 @@ export const useSmartTask = ({ addTask, setView }: UseSmartTaskProps) => {
         radius: DEFAULT_RADIUS,
         isCompleted: false,
         createdAt: Date.now(),
+        dueDate: parsed.dueDate,
       };
 
       if (parsed.hasLocation) {
