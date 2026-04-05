@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { calculateDistance, formatDistance } from './geo';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { calculateDistance, formatDistance, getCurrentPositionWithFallback } from './geo';
 
 describe('calculateDistance', () => {
   it('should return 0 for the same coordinates', () => {
@@ -78,5 +78,57 @@ describe('formatDistance', () => {
   it('should handle fractional kilometer values correctly', () => {
     expect(formatDistance(1050)).toBe('1.1km');
     expect(formatDistance(1999)).toBe('2.0km');
+  });
+});
+
+describe('getCurrentPositionWithFallback', () => {
+  let mockGeolocation: any;
+
+  beforeEach(() => {
+    mockGeolocation = {
+      getCurrentPosition: vi.fn(),
+    };
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      configurable: true,
+    });
+  });
+
+  it('should reject if geolocation is not supported', async () => {
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: undefined,
+      configurable: true,
+    });
+    await expect(getCurrentPositionWithFallback()).rejects.toThrow('Geolocation is not supported by your browser');
+  });
+
+  it('should resolve with high accuracy if successful', async () => {
+    const mockPos = { coords: { latitude: 10, longitude: 20 } };
+    mockGeolocation.getCurrentPosition.mockImplementationOnce((success: any) => success(mockPos));
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPos);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+
+  it('should fallback to low accuracy if high accuracy fails', async () => {
+    const mockPos = { coords: { latitude: 10, longitude: 20 } };
+
+    // First call fails (high accuracy)
+    mockGeolocation.getCurrentPosition.mockImplementationOnce((success: any, error: any) => error(new Error('High accuracy failed')));
+    // Second call succeeds (low accuracy)
+    mockGeolocation.getCurrentPosition.mockImplementationOnce((success: any) => success(mockPos));
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPos);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+
+  it('should reject if both high and low accuracy fail', async () => {
+    // Both calls fail
+    mockGeolocation.getCurrentPosition.mockImplementation((success: any, error: any) => error(new Error('Low accuracy failed')));
+
+    await expect(getCurrentPositionWithFallback()).rejects.toThrow('Low accuracy failed');
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
   });
 });
