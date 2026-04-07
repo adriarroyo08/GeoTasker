@@ -31,7 +31,8 @@ describe('useSmartTask', () => {
       title: 'Buy Milk',
       description: 'At the store',
       hasLocation: false,
-      suggestedLocationName: undefined
+      suggestedLocationName: undefined,
+      dueDate: undefined
     };
     vi.spyOn(geminiService, 'parseTaskWithGemini').mockResolvedValue(mockParsed);
 
@@ -61,7 +62,8 @@ describe('useSmartTask', () => {
       title: 'Go to Park',
       description: 'Have fun',
       hasLocation: true,
-      suggestedLocationName: 'Central Park'
+      suggestedLocationName: 'Central Park',
+      dueDate: undefined
     };
     vi.spyOn(geminiService, 'parseTaskWithGemini').mockResolvedValue(mockParsed);
     // Mock alert to prevent jsdom error or annoyance
@@ -92,7 +94,8 @@ describe('useSmartTask', () => {
       title: 'Go to Park',
       description: 'Have fun',
       hasLocation: true,
-      suggestedLocationName: 'Central Park'
+      suggestedLocationName: 'Central Park',
+      dueDate: undefined
     };
     vi.spyOn(geminiService, 'parseTaskWithGemini').mockResolvedValue(mockParsed);
     vi.spyOn(window, 'alert').mockImplementation(() => {});
@@ -130,7 +133,8 @@ describe('useSmartTask', () => {
       title: 'Go to Park',
       description: 'Have fun',
       hasLocation: true,
-      suggestedLocationName: 'Central Park'
+      suggestedLocationName: 'Central Park',
+      dueDate: undefined
     };
     vi.spyOn(geminiService, 'parseTaskWithGemini').mockResolvedValue(mockParsed);
     vi.spyOn(window, 'alert').mockImplementation(() => {});
@@ -188,7 +192,8 @@ describe('useSmartTask', () => {
       title: 'Go to Park',
       description: '',
       hasLocation: true,
-      suggestedLocationName: 'Park'
+      suggestedLocationName: 'Park',
+      dueDate: undefined
     };
     vi.spyOn(geminiService, 'parseTaskWithGemini').mockResolvedValue(mockParsed);
     vi.spyOn(window, 'alert').mockImplementation(() => {});

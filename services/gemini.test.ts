@@ -33,19 +33,21 @@ describe('parseTaskWithGemini', () => {
         title: "Comprar leche",
         description: "En el supermercado de la esquina",
         hasLocation: true,
-        suggestedLocationName: "supermercado de la esquina"
+        suggestedLocationName: "supermercado de la esquina",
+        dueDate: "2026-03-15T12:00:00.000Z"
       })
     };
     mockGenerateContent.mockResolvedValue(mockResponse);
 
-    const input = "Comprar leche en el supermercado de la esquina";
+    const input = "Comprar leche en el supermercado de la esquina mañana";
     const result = await parseTaskWithGemini(input);
 
     expect(result).toEqual({
       title: "Comprar leche",
       description: "En el supermercado de la esquina",
       hasLocation: true,
-      suggestedLocationName: "supermercado de la esquina"
+      suggestedLocationName: "supermercado de la esquina",
+      dueDate: "2026-03-15T12:00:00.000Z"
     });
 
     // Check that sanitization doesn't modify a normal string
