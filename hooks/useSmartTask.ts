@@ -26,6 +26,7 @@ export const useSmartTask = ({ addTask, setView }: UseSmartTaskProps) => {
       const newTask: Partial<Task> = {
         title: parsed.title,
         description: parsed.description,
+        dueDate: parsed.dueDate,
         radius: DEFAULT_RADIUS,
         isCompleted: false,
         createdAt: Date.now(),
