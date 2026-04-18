@@ -31,3 +31,35 @@ export const formatDistance = (meters: number): string => {
   }
   return `${(meters / 1000).toFixed(1)}km`;
 };
+export const getCurrentPositionWithFallback = (): Promise<GeolocationPosition> => {
+  return new Promise((resolve, reject) => {
+    const HIGH_ACCURACY_OPTIONS: PositionOptions = {
+      enableHighAccuracy: true,
+      timeout: 20000,
+      maximumAge: 10000
+    };
+
+    const LOW_ACCURACY_OPTIONS: PositionOptions = {
+      enableHighAccuracy: false,
+      timeout: 30000,
+      maximumAge: 60000
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      resolve,
+      (err) => {
+        if (err.code === 3 || err.code === 2) {
+          // Fallback to low accuracy
+          navigator.geolocation.getCurrentPosition(
+            resolve,
+            reject,
+            LOW_ACCURACY_OPTIONS
+          );
+        } else {
+          reject(err);
+        }
+      },
+      HIGH_ACCURACY_OPTIONS
+    );
+  });
+};
