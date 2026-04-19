@@ -2,6 +2,14 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@utility pt-safe {
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+}
+
+@utility pb-safe {
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+}
+
 /* Global styles */
 html, body, #root {
   height: 100%;
@@ -27,4 +35,3 @@ input, textarea, select {
 .scroll-pb-safe {
   scroll-padding-bottom: calc(4rem + env(safe-area-inset-bottom));
 }
-
