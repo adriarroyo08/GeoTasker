@@ -31,3 +31,27 @@ export const formatDistance = (meters: number): string => {
   }
   return `${(meters / 1000).toFixed(1)}km`;
 };
+export const getCurrentPositionWithFallback = (): Promise<GeolocationPosition> => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation not supported"));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      resolve,
+      (highAccuracyError) => {
+        if (highAccuracyError.code === 3 || highAccuracyError.code === 2) {
+          navigator.geolocation.getCurrentPosition(
+            resolve,
+            reject,
+            { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 }
+          );
+        } else {
+          reject(highAccuracyError);
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
+    );
+  });
+};

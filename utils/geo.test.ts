@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { calculateDistance, formatDistance } from './geo';
 
 describe('calculateDistance', () => {
@@ -78,5 +78,112 @@ describe('formatDistance', () => {
   it('should handle fractional kilometer values correctly', () => {
     expect(formatDistance(1050)).toBe('1.1km');
     expect(formatDistance(1999)).toBe('2.0km');
+  });
+});
+
+describe('getCurrentPositionWithFallback', () => {
+  let originalGeolocation: any;
+
+  beforeEach(() => {
+    // Save original geolocation
+    originalGeolocation = global.navigator?.geolocation;
+  });
+
+  afterEach(() => {
+    // Restore original geolocation
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: originalGeolocation,
+      writable: true,
+      configurable: true
+    });
+  });
+
+  it('should reject if geolocation is not supported', async () => {
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: undefined,
+      writable: true,
+      configurable: true
+    });
+
+    // Dynamically import to ensure it uses the mocked navigator
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toThrow("Geolocation not supported");
+  });
+
+  it('should resolve immediately if high accuracy succeeds', async () => {
+    const mockPos = { coords: { latitude: 10, longitude: 20 } };
+    const mockGetCurrentPosition = vi.fn().mockImplementation((success) => {
+      success(mockPos);
+    });
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: { getCurrentPosition: mockGetCurrentPosition },
+      writable: true,
+      configurable: true
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPos);
+    expect(mockGetCurrentPosition).toHaveBeenCalledTimes(1);
+    expect(mockGetCurrentPosition.mock.calls[0][2].enableHighAccuracy).toBe(true);
+  });
+
+  it('should fallback to low accuracy if high accuracy fails with timeout (code 3)', async () => {
+    const mockPos = { coords: { latitude: 10, longitude: 20 } };
+    const mockGetCurrentPosition = vi.fn().mockImplementation((success, error, options) => {
+      if (options.enableHighAccuracy) {
+        error({ code: 3, message: "Timeout" });
+      } else {
+        success(mockPos);
+      }
+    });
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: { getCurrentPosition: mockGetCurrentPosition },
+      writable: true,
+      configurable: true
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPos);
+    expect(mockGetCurrentPosition).toHaveBeenCalledTimes(2);
+    expect(mockGetCurrentPosition.mock.calls[1][2].enableHighAccuracy).toBe(false);
+  });
+
+  it('should reject if both high and low accuracy fail', async () => {
+    const mockGetCurrentPosition = vi.fn().mockImplementation((success, error, options) => {
+      if (options.enableHighAccuracy) {
+        error({ code: 3, message: "Timeout" });
+      } else {
+        error({ code: 1, message: "Permission Denied" });
+      }
+    });
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: { getCurrentPosition: mockGetCurrentPosition },
+      writable: true,
+      configurable: true
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: "Permission Denied" });
+  });
+
+  it('should reject immediately if high accuracy fails with permission denied (code 1)', async () => {
+    const mockGetCurrentPosition = vi.fn().mockImplementation((success, error, options) => {
+      error({ code: 1, message: "Permission Denied" });
+    });
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: { getCurrentPosition: mockGetCurrentPosition },
+      writable: true,
+      configurable: true
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: "Permission Denied" });
+    expect(mockGetCurrentPosition).toHaveBeenCalledTimes(1);
   });
 });
