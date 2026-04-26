@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { calculateDistance, formatDistance } from './geo';
 
 describe('calculateDistance', () => {
@@ -78,5 +78,65 @@ describe('formatDistance', () => {
   it('should handle fractional kilometer values correctly', () => {
     expect(formatDistance(1050)).toBe('1.1km');
     expect(formatDistance(1999)).toBe('2.0km');
+  });
+});
+
+describe('getCurrentPositionWithFallback', () => {
+  let originalGeolocation: Geolocation;
+
+  beforeEach(() => {
+    originalGeolocation = global.navigator.geolocation;
+    global.navigator.geolocation = {
+      getCurrentPosition: vi.fn(),
+      watchPosition: vi.fn(),
+      clearWatch: vi.fn(),
+    } as any;
+  });
+
+  afterEach(() => {
+    global.navigator.geolocation = originalGeolocation;
+    vi.restoreAllMocks();
+  });
+
+  it('should resolve with position when high-accuracy is successful', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+    (global.navigator.geolocation.getCurrentPosition as any).mockImplementationOnce(
+      (successCallback: any) => successCallback(mockPosition)
+    );
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const position = await getCurrentPositionWithFallback();
+    expect(position).toEqual(mockPosition);
+  });
+
+  it('should fall back to low-accuracy when high-accuracy fails', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+    const mockError = { code: 3, message: 'Timeout' };
+
+    (global.navigator.geolocation.getCurrentPosition as any).mockImplementationOnce(
+      (successCallback: any, errorCallback: any) => errorCallback(mockError)
+    ).mockImplementationOnce(
+      (successCallback: any) => successCallback(mockPosition)
+    );
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const position = await getCurrentPositionWithFallback();
+
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+    expect(position).toEqual(mockPosition);
+  });
+
+  it('should reject when both high-accuracy and low-accuracy fail', async () => {
+    const mockErrorHigh = { code: 3, message: 'Timeout' };
+    const mockErrorLow = { code: 1, message: 'Permission Denied' };
+
+    (global.navigator.geolocation.getCurrentPosition as any).mockImplementationOnce(
+      (successCallback: any, errorCallback: any) => errorCallback(mockErrorHigh)
+    ).mockImplementationOnce(
+      (successCallback: any, errorCallback: any) => errorCallback(mockErrorLow)
+    );
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual(mockErrorLow);
   });
 });
