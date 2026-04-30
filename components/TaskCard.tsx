@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Task } from '../types';
 import { MapPin, Calendar, CheckCircle, Circle, Trash2, Pencil } from 'lucide-react';
 import { formatDistance, calculateDistance } from '../utils/geo';
@@ -12,7 +12,7 @@ interface TaskCardProps {
   onEdit: (task: Task) => void;
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDeleteClick, onEdit }) => {
+export const TaskCard: React.FC<TaskCardProps> = memo(({ task, userLat, userLng, onToggle, onDeleteClick, onEdit }) => {
   let distanceStr = '';
   if (task.location && userLat !== undefined && userLng !== undefined) {
     const dist = calculateDistance(userLat, userLng, task.location.lat, task.location.lng);
@@ -103,4 +103,4 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
       </div>
     </div>
   );
-};
+});

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus, Sparkles, Loader2 } from 'lucide-react';
 import { Task, GeoLocation } from '../types';
 import { TaskCard } from './TaskCard';
@@ -28,6 +28,24 @@ export const TaskList: React.FC<TaskListProps> = ({
   setEditingTask,
 }) => {
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+
+  const pendingTasksCount = useMemo(() => {
+    return tasks.filter(t => !t.isCompleted).length;
+  }, [tasks]);
+
+  const renderedTasks = useMemo(() => {
+    return tasks.map(task => (
+      <TaskCard
+        key={task.id}
+        task={task}
+        userLat={userLocation?.lat}
+        userLng={userLocation?.lng}
+        onToggle={toggleTask}
+        onDeleteClick={setTaskToDelete}
+        onEdit={setEditingTask}
+      />
+    ));
+  }, [tasks, userLocation, toggleTask, setEditingTask]);
 
   return (
     <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-4 max-w-2xl mx-auto w-full">
@@ -61,25 +79,15 @@ export const TaskList: React.FC<TaskListProps> = ({
         </p>
       </div>
 
-      {/* Task List */}
-      <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3">Tareas pendientes ({tasks.filter(t => !t.isCompleted).length})</h2>
+      {/* TaskList render */}
+      <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3">Tareas pendientes ({pendingTasksCount})</h2>
       {tasks.length === 0 ? (
         <div className="text-center py-10 text-gray-400 dark:text-gray-500">
           <p>No tienes tareas pendientes.</p>
           <p className="text-sm">¡Agrega una arriba!</p>
         </div>
       ) : (
-        tasks.map(task => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            userLat={userLocation?.lat}
-            userLng={userLocation?.lng}
-            onToggle={toggleTask}
-            onDeleteClick={setTaskToDelete}
-            onEdit={setEditingTask}
-          />
-        ))
+        renderedTasks
       )}
 
       <ConfirmModal
