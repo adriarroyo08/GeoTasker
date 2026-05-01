@@ -31,3 +31,28 @@ export const formatDistance = (meters: number): string => {
   }
   return `${(meters / 1000).toFixed(1)}km`;
 };
+
+/**
+ * Gets the current position with a fallback to low accuracy if high accuracy fails (e.g. timeout).
+ * Immediately rejects if permission is denied (code 1).
+ */
+export const getCurrentPositionWithFallback = async (): Promise<GeolocationPosition> => {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, (error) => {
+      if (error.code === 1) {
+        reject(error);
+        return;
+      }
+      console.log("High accuracy failed, falling back to low accuracy...");
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: false,
+        timeout: 30000,
+        maximumAge: 60000
+      });
+    }, {
+      enableHighAccuracy: true,
+      timeout: 20000,
+      maximumAge: 5000
+    });
+  });
+};
