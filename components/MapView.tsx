@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Task, GeoLocation } from '../types';
+import { getCurrentPositionWithFallback } from '../utils/geo';
 import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS, USER_ICON } from '../constants';
 import { Locate, Loader2 } from 'lucide-react';
 import L from 'leaflet';
@@ -64,14 +65,14 @@ const LocateControl: React.FC<{
     e.preventDefault();
     setLoading(true);
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
+    getCurrentPositionWithFallback()
+      .then((pos) => {
         const { latitude, longitude } = pos.coords;
         map.setView([latitude, longitude], 16);
         onFound(latitude, longitude);
         setLoading(false);
-      },
-      (err) => {
+      })
+      .catch((err) => {
         console.error(err);
         setLoading(false);
         if (err.code === 3) {
@@ -79,9 +80,7 @@ const LocateControl: React.FC<{
         } else {
            console.warn("No se pudo obtener la ubicación actual.");
         }
-      },
-      GEOLOCATION_OPTIONS
-    );
+      });
   };
 
   return (
