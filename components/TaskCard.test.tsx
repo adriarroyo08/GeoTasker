@@ -110,4 +110,21 @@ describe('TaskCard', () => {
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
   });
+
+  it('verifies that React.memo does not break interaction (onToggle, onDeleteClick)', () => {
+    render(<TaskCard task={baseTask} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />);
+
+    // Check that it rendered
+    expect(screen.getByText('Test Task')).toBeTruthy();
+
+    // Fire toggle
+    const toggleButton = screen.getByLabelText('Marcar como completada');
+    fireEvent.click(toggleButton);
+    expect(mockOnToggle).toHaveBeenCalledWith('1');
+
+    // Fire delete
+    const deleteButton = screen.getByLabelText('Eliminar tarea');
+    fireEvent.click(deleteButton);
+    expect(mockOnDeleteClick).toHaveBeenCalledWith('1');
+  });
 });
