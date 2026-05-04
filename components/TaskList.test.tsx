@@ -122,4 +122,17 @@ describe('TaskList', () => {
     expect(screen.getByText('Buy groceries')).toBeTruthy();
     expect(screen.getByText('Second task')).toBeTruthy();
   });
+
+  it('should correctly update pendingTasksCount when tasks are toggled', () => {
+    const task1 = { ...sampleTask, id: '1', isCompleted: false };
+    const task2 = { ...sampleTask, id: '2', isCompleted: false };
+
+    // Both pending
+    const { rerender } = render(<TaskList {...defaultProps} tasks={[task1, task2]} />);
+    expect(screen.getByText('Tareas pendientes (2)')).toBeTruthy();
+
+    // One completed
+    rerender(<TaskList {...defaultProps} tasks={[{ ...task1, isCompleted: true }, task2]} />);
+    expect(screen.getByText('Tareas pendientes (1)')).toBeTruthy();
+  });
 });
