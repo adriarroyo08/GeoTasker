@@ -15,6 +15,8 @@ export const parseTaskWithGemini = async (input: string): Promise<{ title: strin
       model: "gemini-2.0-flash",
       contents: `Analiza la siguiente entrada de usuario para una aplicación de tareas y extrae la información en formato JSON.
       Entrada: ${sanitizedInput}
+      La fecha actual es ${new Date().toISOString()}.
+
       Si el usuario menciona un lugar, extráelo en "suggestedLocationName". Si no, déjalo vacío.
       Devuelve un título conciso y una descripción si hay detalles extra.`,
       config: {
