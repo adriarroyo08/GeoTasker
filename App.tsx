@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Check, X } from 'lucide-react';
 
 import { AppView, Task } from './types';
@@ -35,10 +35,10 @@ const App: React.FC = () => {
 
   const { userLocation, locationError, updateLocation } = useGeofencing(tasks);
 
-  const handleUpdateTask = (updatedTask: Task) => {
+  const handleUpdateTask = useCallback((updatedTask: Task) => {
     updateTask(updatedTask);
     setEditingTask(null);
-  };
+  }, [updateTask]);
 
   return (
     <div className="flex flex-col h-[100dvh] bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
