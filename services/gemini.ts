@@ -10,11 +10,13 @@ export const parseTaskWithGemini = async (input: string): Promise<{ title: strin
     if (apiKey === "dummy_key") throw new Error("No API Key");
 
     const sanitizedInput = JSON.stringify(input);
+    const currentDate = new Date().toISOString();
 
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: `Analiza la siguiente entrada de usuario para una aplicación de tareas y extrae la información en formato JSON.
       Entrada: ${sanitizedInput}
+      Fecha actual del sistema: ${currentDate}
       Si el usuario menciona un lugar, extráelo en "suggestedLocationName". Si no, déjalo vacío.
       Devuelve un título conciso y una descripción si hay detalles extra.`,
       config: {

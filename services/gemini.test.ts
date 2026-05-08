@@ -57,6 +57,33 @@ describe('parseTaskWithGemini', () => {
     );
   });
 
+  it('should include the current system date in the prompt context', async () => {
+    const mockResponse = {
+      text: JSON.stringify({
+        title: "Test Task",
+        description: "Test Desc",
+        hasLocation: false
+      })
+    };
+    mockGenerateContent.mockResolvedValue(mockResponse);
+
+    // Mock Date to ensure deterministic output
+    const fakeDate = new Date('2023-10-25T12:00:00.000Z');
+    vi.useFakeTimers();
+    vi.setSystemTime(fakeDate);
+
+    await parseTaskWithGemini("Recordarme mañana");
+
+    expect(mockGenerateContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'gemini-2.0-flash',
+        contents: expect.stringContaining(fakeDate.toISOString())
+      })
+    );
+
+    vi.useRealTimers();
+  });
+
   it('should sanitize input containing quotes and backslashes', async () => {
     const mockResponse = {
       text: JSON.stringify({

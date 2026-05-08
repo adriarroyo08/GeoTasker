@@ -7,6 +7,10 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: '/images/marker-icon.png',
   iconUrl: '/images/marker-icon.png',
   shadowUrl: '/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
 });
 
 export const DEFAULT_ICON = L.icon({
@@ -14,6 +18,8 @@ export const DEFAULT_ICON = L.icon({
   shadowUrl: '/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
 });
 
 export const COMPLETED_ICON = L.icon({
