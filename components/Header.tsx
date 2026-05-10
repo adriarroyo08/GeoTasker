@@ -9,7 +9,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ locationError, darkMode, toggleTheme }) => {
   return (
-    <header className="sticky top-0 bg-white dark:bg-gray-800 shadow-sm px-4 pb-3 pt-[calc(0.75rem_+_env(safe-area-inset-top))] z-30 flex justify-between items-center transition-colors min-h-[56px]">
+    <header className="sticky top-0 bg-white dark:bg-gray-800 shadow-sm px-4 pb-3 pt-safe z-30 flex justify-between items-center transition-colors min-h-[56px]">
       <div className="flex items-center gap-2 min-w-0">
         <div className="bg-blue-600 p-2 rounded-lg text-white shrink-0">
           <Navigation size={20} />
@@ -19,7 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ locationError, darkMode, toggleT
 
       <div className="flex items-center gap-2 shrink-0 ml-2">
         {locationError && (
-          <div className="text-xs text-red-500 max-w-[120px] sm:max-w-[200px] leading-tight text-right line-clamp-2">
+          <div className="text-xs text-red-500 max-w-[160px] sm:max-w-[200px] leading-tight text-right">
             {locationError}
           </div>
         )}
