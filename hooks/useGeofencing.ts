@@ -79,6 +79,12 @@ export const useGeofencing = (tasks: Task[]) => {
 
   const handleLocationError = (error: GeolocationPositionError) => {
     console.warn(`Geolocation error (${error.code}): ${error.message}`);
+    if (error.code === 1) {
+      if (!userLocationRef.current) {
+        setLocationError("Permiso de ubicación denegado.");
+      }
+      return;
+    }
     if ((error.code === 3 || error.code === 2) && useHighAccuracy) {
       console.log("High accuracy failed, falling back to low accuracy...");
       setUseHighAccuracy(false);

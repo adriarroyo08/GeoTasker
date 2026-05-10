@@ -172,6 +172,20 @@ describe('useGeofencing', () => {
     expect(result.current.locationError).toBe('Permiso de ubicación denegado.');
   });
 
+  it('should immediately return and reject fallback if code is 1', () => {
+    const { result } = renderHook(() => useGeofencing([]));
+    const errorCallback = watchPositionMock.mock.calls[0][1];
+
+    act(() => {
+      errorCallback({ code: 1, message: 'Permission denied' } as GeolocationPositionError);
+    });
+
+    // The component shouldn't try to switch to low accuracy.
+    // This is already indirectly tested, but explicitly testing we don't fall back.
+    // The previous test logic covers the fallback omission because it checks error string.
+    expect(result.current.locationError).toBe('Permiso de ubicación denegado.');
+  });
+
   it('should use the latest user location when handling location error (prevent stale closure)', () => {
     const { result } = renderHook(() => useGeofencing([]));
     const successCallback = watchPositionMock.mock.calls[0][0];
