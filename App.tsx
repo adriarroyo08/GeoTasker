@@ -35,10 +35,10 @@ const App: React.FC = () => {
 
   const { userLocation, locationError, updateLocation } = useGeofencing(tasks);
 
-  const handleUpdateTask = (updatedTask: Task) => {
+  const handleUpdateTask = React.useCallback((updatedTask: Task) => {
     updateTask(updatedTask);
     setEditingTask(null);
-  };
+  }, [updateTask]);
 
   return (
     <div className="flex flex-col h-[100dvh] bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
