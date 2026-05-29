@@ -64,24 +64,24 @@ const LocateControl: React.FC<{
     e.preventDefault();
     setLoading(true);
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        map.setView([latitude, longitude], 16);
-        onFound(latitude, longitude);
-        setLoading(false);
-      },
-      (err) => {
-        console.error(err);
-        setLoading(false);
-        if (err.code === 3) {
-           console.warn("El GPS tardó demasiado. Intenta moverte a un lugar despejado o espera un momento.");
-        } else {
-           console.warn("No se pudo obtener la ubicación actual.");
-        }
-      },
-      GEOLOCATION_OPTIONS
-    );
+    import('../utils/geo').then(({ getCurrentPositionWithFallback }) => {
+      getCurrentPositionWithFallback()
+        .then((pos) => {
+          const { latitude, longitude } = pos.coords;
+          map.setView([latitude, longitude], 16);
+          onFound(latitude, longitude);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setLoading(false);
+          if (err.code === 3) {
+             console.warn("El GPS tardó demasiado. Intenta moverte a un lugar despejado o espera un momento.");
+          } else {
+             console.warn("No se pudo obtener la ubicación actual.");
+          }
+        });
+    });
   };
 
   return (
