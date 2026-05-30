@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Check, X } from 'lucide-react';
 
 import { AppView, Task } from './types';
 import { useGeofencing } from './hooks/useGeofencing';
@@ -9,6 +8,7 @@ import { useSmartTask } from './hooks/useSmartTask';
 import { MapView } from './components/MapView';
 import { EditTaskModal } from './components/EditTaskModal';
 import { Header } from './components/Header';
+import { LocationConfirmOverlay } from './components/LocationConfirmOverlay';
 import { BottomNav } from './components/BottomNav';
 import { TaskList } from './components/TaskList';
 
@@ -78,24 +78,12 @@ const App: React.FC = () => {
             />
             
             {/* Location Confirmation Overlay */}
-            {isSelectingLocation && tempLocation && (
-              <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-[1000] flex gap-3 animate-in slide-in-from-bottom-4">
-                <button
-                  onClick={cancelLocation}
-                  className="bg-white dark:bg-gray-800 dark:text-white text-gray-700 px-4 py-3 rounded-2xl shadow-xl font-bold border border-gray-200 dark:border-gray-700 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <X size={20} />
-                  Cancelar
-                </button>
-                <button
-                  onClick={confirmLocation}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-2xl shadow-xl font-bold flex items-center gap-2 hover:bg-blue-700 active:scale-95 transition-all"
-                >
-                  <Check size={20} />
-                  Confirmar Ubicación
-                </button>
-              </div>
-            )}
+            <LocationConfirmOverlay
+              isSelectingLocation={isSelectingLocation}
+              hasTempLocation={!!tempLocation}
+              onCancel={cancelLocation}
+              onConfirm={confirmLocation}
+            />
           </div>
         )}
       </main>
