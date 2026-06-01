@@ -72,6 +72,10 @@ const LocateControl: React.FC<{
         setLoading(false);
       },
       (err) => {
+        if (err.code === 1) {
+          setLoading(false);
+          return;
+        }
         console.error(err);
         setLoading(false);
         if (err.code === 3) {
