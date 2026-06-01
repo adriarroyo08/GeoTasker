@@ -27,10 +27,15 @@ export const useTaskManager = () => {
     let timeoutId: number;
 
     const saveTasks = () => {
-      localStorage.setItem('tasks', JSON.stringify(tasksRef.current));
+      // Prune completed tasks older than 30 days to prevent unbounded localStorage growth
+      const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      const prunedTasks = tasksRef.current.filter(
+        t => !t.isCompleted || t.createdAt > thirtyDaysAgo
+      );
+      localStorage.setItem('tasks', JSON.stringify(prunedTasks));
     };
 
-    // Debounced save
+    // Debounced save with pruning of old completed tasks
     timeoutId = window.setTimeout(() => {
       saveTasks();
     }, 1000);
@@ -52,7 +57,11 @@ export const useTaskManager = () => {
   // Handle final flush on component unmount only
   useEffect(() => {
     return () => {
-      localStorage.setItem('tasks', JSON.stringify(tasksRef.current));
+      const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      const prunedTasks = tasksRef.current.filter(
+        t => !t.isCompleted || t.createdAt > thirtyDaysAgo
+      );
+      localStorage.setItem('tasks', JSON.stringify(prunedTasks));
     };
   }, []);
 

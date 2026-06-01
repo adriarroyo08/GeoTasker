@@ -102,7 +102,7 @@ describe('useTaskManager', () => {
 
   it('should toggle a task and debounce save to localStorage', () => {
     const { result } = renderHook(() => useTaskManager());
-    const newTask: Task = { id: '1', title: 'New Task', description: '', radius: 100, isCompleted: false, createdAt: 123 };
+    const newTask: Task = { id: '1', title: 'New Task', description: '', radius: 100, isCompleted: false, createdAt: Date.now() };
 
     act(() => {
       result.current.addTask(newTask);

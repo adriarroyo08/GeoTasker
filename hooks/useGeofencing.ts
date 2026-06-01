@@ -61,6 +61,16 @@ export const useGeofencing = (tasks: Task[]) => {
     checkGeofences();
   }, [userLocation, tasks, triggeredTasks]);
 
+  // Clean up triggeredTasks when tasks are deleted to prevent stale IDs from accumulating
+  useEffect(() => {
+    const taskIds = new Set(tasks.map(t => t.id));
+    setTriggeredTasks(prev => {
+      const cleaned = new Set([...prev].filter(id => taskIds.has(id)));
+      if (cleaned.size !== prev.size) return cleaned;
+      return prev;
+    });
+  }, [tasks]);
+
   useEffect(() => {
     try {
       localStorage.setItem('triggeredTasks', JSON.stringify(Array.from(triggeredTasks)));
