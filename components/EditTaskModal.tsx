@@ -86,7 +86,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
                 max="1000"
                 step="50"
                 value={radius}
-                onChange={(e) => setRadius(Number(e.target.value))}
+                onChange={(e) => { const v = Number(e.target.value); if (Number.isFinite(v)) setRadius(Math.max(50, Math.min(1000, v))); }}
                 className="w-full h-2 bg-blue-200 dark:bg-blue-900 rounded-lg appearance-none cursor-pointer accent-blue-600"
               />
               <div className="flex justify-between text-[10px] text-gray-400 mt-1">

@@ -33,7 +33,16 @@ export const parseTaskWithGemini = async (input: string): Promise<{ title: strin
     });
 
     if (response.text) {
-      return JSON.parse(response.text);
+      const parsed = JSON.parse(response.text);
+      if (typeof parsed.title !== 'string' || typeof parsed.hasLocation !== 'boolean') {
+        throw new Error("Invalid response schema");
+      }
+      return {
+        title: parsed.title,
+        description: typeof parsed.description === 'string' ? parsed.description : '',
+        hasLocation: parsed.hasLocation,
+        suggestedLocationName: typeof parsed.suggestedLocationName === 'string' ? parsed.suggestedLocationName : undefined,
+      };
     }
     throw new Error("No response text");
   } catch (error) {
