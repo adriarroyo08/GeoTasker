@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Task, GeoLocation } from '../types';
 import { DEFAULT_CENTER, DEFAULT_ICON, COMPLETED_ICON, TASK_CIRCLE_OPTIONS, PREVIEW_CIRCLE_OPTIONS, USER_ICON } from '../constants';
-import { getCurrentPositionWithFallback } from '../utils/geo';
 import { Locate, Loader2 } from 'lucide-react';
 import L from 'leaflet';
 
@@ -44,9 +43,16 @@ const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void }> = ({ 
   return null;
 };
 
+// Helper to share geolocation options
+const GEOLOCATION_OPTIONS = {
+  enableHighAccuracy: true,
+  timeout: 20000,
+  maximumAge: 10000
+};
+
 // Control to manually locate user
-const LocateControl: React.FC<{ 
-  onFound: (lat: number, lng: number) => void; 
+const LocateControl: React.FC<{
+  onFound: (lat: number, lng: number) => void;
   selectingLocation?: boolean;
   isDarkMode?: boolean;
 }> = ({ onFound, selectingLocation, isDarkMode }) => {
@@ -58,14 +64,14 @@ const LocateControl: React.FC<{
     e.preventDefault();
     setLoading(true);
 
-    getCurrentPositionWithFallback()
-      .then((pos) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
         const { latitude, longitude } = pos.coords;
         map.setView([latitude, longitude], 16);
         onFound(latitude, longitude);
         setLoading(false);
-      })
-      .catch((err) => {
+      },
+      (err) => {
         console.error(err);
         setLoading(false);
         if (err.code === 3) {
@@ -73,7 +79,9 @@ const LocateControl: React.FC<{
         } else {
            console.warn("No se pudo obtener la ubicación actual.");
         }
-      });
+      },
+      GEOLOCATION_OPTIONS
+    );
   };
 
   return (
@@ -81,8 +89,8 @@ const LocateControl: React.FC<{
       <button
         onClick={handleClick}
         className={`p-3 rounded-full shadow-lg transition-colors flex items-center justify-center gap-2 ${
-          selectingLocation 
-            ? 'bg-blue-600 text-white hover:bg-blue-700' 
+          selectingLocation
+            ? 'bg-blue-600 text-white hover:bg-blue-700'
             : isDarkMode
               ? 'bg-gray-800 text-white hover:bg-gray-700'
               : 'bg-white text-gray-700 hover:bg-gray-50'
@@ -96,25 +104,25 @@ const LocateControl: React.FC<{
   );
 };
 
-export const MapView: React.FC<MapViewProps> = ({ 
-  tasks, 
-  userLocation, 
-  onMapClick, 
-  selectingLocation, 
+export const MapView: React.FC<MapViewProps> = ({
+  tasks,
+  userLocation,
+  onMapClick,
+  selectingLocation,
   onUserLocationUpdate,
   previewLocation,
   previewRadius = 200,
   isDarkMode = false
 }) => {
-  const center: [number, number] = userLocation 
-    ? [userLocation.lat, userLocation.lng] 
+  const center: [number, number] = userLocation
+    ? [userLocation.lat, userLocation.lng]
     : [DEFAULT_CENTER.lat, DEFAULT_CENTER.lng];
 
-  const tileUrl = isDarkMode 
+  const tileUrl = isDarkMode
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
     : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
-  const attribution = isDarkMode 
+  const attribution = isDarkMode
     ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
@@ -126,9 +134,9 @@ export const MapView: React.FC<MapViewProps> = ({
           <span>Obteniendo tu ubicación...</span>
         </div>
       )}
-      <MapContainer 
-        center={center} 
-        zoom={15} 
+      <MapContainer
+        center={center}
+        zoom={15}
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
@@ -149,7 +157,7 @@ export const MapView: React.FC<MapViewProps> = ({
         {tasks.map((task) => (
           task.location && (
             <React.Fragment key={task.id}>
-              <Marker 
+              <Marker
                 position={[task.location.lat, task.location.lng]}
                 icon={task.isCompleted ? COMPLETED_ICON : DEFAULT_ICON}
                 opacity={task.isCompleted ? 0.6 : 1}
@@ -160,7 +168,7 @@ export const MapView: React.FC<MapViewProps> = ({
                 </Popup>
               </Marker>
               {!task.isCompleted && (
-                 <Circle 
+                 <Circle
                  center={[task.location.lat, task.location.lng]}
                  radius={task.radius}
                  pathOptions={TASK_CIRCLE_OPTIONS}
@@ -174,7 +182,7 @@ export const MapView: React.FC<MapViewProps> = ({
         {previewLocation && selectingLocation && (
           <>
             <Marker position={[previewLocation.lat, previewLocation.lng]} icon={DEFAULT_ICON} />
-            <Circle 
+            <Circle
               center={[previewLocation.lat, previewLocation.lng]}
               radius={previewRadius}
               pathOptions={PREVIEW_CIRCLE_OPTIONS}
@@ -185,17 +193,17 @@ export const MapView: React.FC<MapViewProps> = ({
         {onMapClick && selectingLocation && (
           <MapEvents onClick={onMapClick} />
         )}
-        
-        <LocateControl 
+
+        <LocateControl
           selectingLocation={selectingLocation}
           isDarkMode={isDarkMode}
           onFound={(lat, lng) => {
             if (onUserLocationUpdate) onUserLocationUpdate(lat, lng);
             if (selectingLocation && onMapClick) onMapClick(lat, lng);
-          }} 
+          }}
         />
       </MapContainer>
-      
+
       {selectingLocation && !previewLocation && (
         <div className="absolute top-16 left-1/2 transform -translate-x-1/2 z-[1000] bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold animate-bounce pointer-events-none">
           Toca el mapa para seleccionar ubicación
