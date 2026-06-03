@@ -22,7 +22,14 @@ export const useGeofencing = (tasks: Task[]) => {
   const [triggeredTasks, setTriggeredTasks] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem('triggeredTasks');
-      if (saved) return new Set(JSON.parse(saved));
+      if (saved) {
+        const parsed: unknown = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // Only keep string IDs; cap to 1000 to prevent unbounded localStorage growth
+          const validIds = parsed.filter((id): id is string => typeof id === 'string').slice(0, 1000);
+          return new Set(validIds);
+        }
+      }
     } catch (e) {
       console.warn("Failed to parse triggeredTasks from localStorage");
     }

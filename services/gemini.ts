@@ -5,13 +5,24 @@ import { GoogleGenAI, Type } from "@google/genai";
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "dummy_key";
 const ai = new GoogleGenAI({ apiKey });
 
+/** Maximum characters of user input forwarded to the Gemini API. */
+const MAX_INPUT_LENGTH = 200;
+/** Abort the Gemini request after this many milliseconds to prevent the UI from hanging. */
+const GEMINI_TIMEOUT_MS = 10000;
+
 export const parseTaskWithGemini = async (input: string): Promise<{ title: string; description: string; hasLocation: boolean; suggestedLocationName?: string }> => {
   try {
     if (apiKey === "dummy_key") throw new Error("No API Key");
 
-    const sanitizedInput = JSON.stringify(input);
+    // Enforce a hard length cap so huge payloads are never sent to the API
+    const trimmedInput = input.trim().slice(0, MAX_INPUT_LENGTH);
+    const sanitizedInput = JSON.stringify(trimmedInput);
 
-    const response = await ai.models.generateContent({
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Gemini request timed out")), GEMINI_TIMEOUT_MS)
+    );
+
+    const fetchPromise = ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: `Analiza la siguiente entrada de usuario para una aplicación de tareas y extrae la información en formato JSON.
       Entrada: ${sanitizedInput}
@@ -32,6 +43,8 @@ export const parseTaskWithGemini = async (input: string): Promise<{ title: strin
       }
     });
 
+    const response = await Promise.race([fetchPromise, timeoutPromise]);
+
     if (response.text) {
       const parsed = JSON.parse(response.text);
       if (typeof parsed.title !== 'string' || typeof parsed.hasLocation !== 'boolean') {
@@ -49,7 +62,7 @@ export const parseTaskWithGemini = async (input: string): Promise<{ title: strin
     console.error("Gemini Parse Error:", error);
     // Fallback for demo if API key is missing or fails
     return {
-      title: input,
+      title: input.trim().slice(0, MAX_INPUT_LENGTH),
       description: "Generado automáticamente",
       hasLocation: false
     };

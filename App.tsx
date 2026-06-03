@@ -8,6 +8,7 @@ import { useTheme } from './hooks/useTheme';
 import { useSmartTask } from './hooks/useSmartTask';
 import { MapView } from './components/MapView';
 import { EditTaskModal } from './components/EditTaskModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { TaskList } from './components/TaskList';
@@ -66,9 +67,10 @@ const App: React.FC = () => {
 
         {view === AppView.MAP && (
           <div className="flex-1 relative">
-            <MapView 
-              tasks={tasks} 
-              userLocation={userLocation} 
+            <ErrorBoundary>
+            <MapView
+              tasks={tasks}
+              userLocation={userLocation}
               onMapClick={handleMapClick}
               selectingLocation={isSelectingLocation}
               onUserLocationUpdate={updateLocation}
@@ -76,6 +78,7 @@ const App: React.FC = () => {
               previewRadius={pendingTask?.radius}
               isDarkMode={darkMode}
             />
+            </ErrorBoundary>
             
             {/* Location Confirmation Overlay */}
             {isSelectingLocation && tempLocation && (

@@ -17,15 +17,20 @@ export const useSmartTask = ({ addTask, setView }: UseSmartTaskProps) => {
   const [tempLocation, setTempLocation] = useState<GeoLocation | null>(null);
 
   const handleSmartAdd = async () => {
-    if (!newTaskInput.trim()) return;
+    const sanitized = newTaskInput.trim().slice(0, 200);
+    if (!sanitized) return;
     setIsProcessing(true);
 
     try {
-      const parsed = await parseTaskWithGemini(newTaskInput);
+      const parsed = await parseTaskWithGemini(sanitized);
+
+      // Clamp/validate title returned by the AI before storing
+      const safeTitle = (typeof parsed.title === 'string' ? parsed.title.trim() : '').slice(0, 100) || sanitized.slice(0, 100);
+      const safeDescription = (typeof parsed.description === 'string' ? parsed.description : '').slice(0, 500);
 
       const newTask: Partial<Task> = {
-        title: parsed.title,
-        description: parsed.description,
+        title: safeTitle,
+        description: safeDescription,
         radius: DEFAULT_RADIUS,
         isCompleted: false,
         createdAt: Date.now(),
@@ -43,7 +48,7 @@ export const useSmartTask = ({ addTask, setView }: UseSmartTaskProps) => {
       console.error(e);
       // Fallback a modo manual
       const fallbackTask: Partial<Task> = {
-        title: newTaskInput,
+        title: sanitized.slice(0, 100),
         description: '',
         radius: DEFAULT_RADIUS,
         isCompleted: false,

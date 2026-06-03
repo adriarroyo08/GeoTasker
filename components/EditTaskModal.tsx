@@ -19,12 +19,21 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const safeTitle = title.trim().slice(0, 100);
+    if (!safeTitle) return; // guard against empty/whitespace-only titles
+    const safeDescription = description.slice(0, 500);
+    // Validate that dueDate, if supplied, is a parseable date
+    let safeDueDate: string | undefined;
+    if (dueDate) {
+      const parsed = new Date(dueDate);
+      safeDueDate = isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+    }
     onSave({
       ...task,
-      title,
-      description,
+      title: safeTitle,
+      description: safeDescription,
       radius,
-      dueDate: dueDate ? new Date(dueDate).toISOString() : undefined
+      dueDate: safeDueDate,
     });
   };
 
@@ -55,6 +64,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción</label>
             <textarea
               value={description}
+              maxLength={500}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none h-24 resize-none dark:bg-gray-700 dark:text-white"
             />
