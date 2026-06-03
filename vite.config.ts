@@ -16,7 +16,25 @@ export default defineConfig(({ mode }) => {
           registerType: 'autoUpdate',
           includeAssets: ['icon.svg', 'images/*.png'],
           workbox: {
-            globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+            globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+            runtimeCaching: [
+              {
+                // OpenStreetMap and CARTO tile layers — cache with NetworkFirst (30-day expiry, 500 tiles max)
+                urlPattern: /^https:\/\/(?:[a-z]\.tile\.openstreetmap\.org|[a-z]\.basemaps\.cartocdn\.com)\/.*/i,
+                handler: 'NetworkFirst',
+                options: {
+                  cacheName: 'map-tiles',
+                  networkTimeoutSeconds: 5,
+                  expiration: {
+                    maxEntries: 500,
+                    maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+                  },
+                  cacheableResponse: {
+                    statuses: [0, 200],
+                  },
+                },
+              },
+            ],
           },
           manifest: {
             id: '/',

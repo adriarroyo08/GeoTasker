@@ -68,11 +68,32 @@ export const useGeofencing = (tasks: Task[]) => {
     checkGeofences();
   }, [userLocation, tasks, triggeredTasks]);
 
-  // Clean up triggeredTasks when tasks are deleted to prevent stale IDs from accumulating
+  // Track the previous completion state of each task so we can detect re-activation.
+  const prevCompletionRef = useRef<Map<string, boolean>>(new Map());
+
+  // Clean up triggeredTasks when tasks are deleted OR re-activated (un-completed).
+  // A task toggled from completed → pending is removed from the triggered set so it
+  // can fire its geofence notification again if the user is still in range.
   useEffect(() => {
-    const taskIds = new Set(tasks.map(t => t.id));
+    const currentIds = new Set(tasks.map(t => t.id));
+    const prevCompletion = prevCompletionRef.current;
+
+    // Collect IDs that just transitioned from completed → pending (re-activated)
+    const reactivatedIds = new Set<string>();
+    for (const task of tasks) {
+      const wasCompleted = prevCompletion.get(task.id);
+      if (wasCompleted === true && !task.isCompleted) {
+        reactivatedIds.add(task.id);
+      }
+    }
+
+    // Update the ref for next comparison
+    prevCompletionRef.current = new Map(tasks.map(t => [t.id, t.isCompleted]));
+
     setTriggeredTasks(prev => {
-      const cleaned = new Set([...prev].filter(id => taskIds.has(id)));
+      const cleaned = new Set(
+        [...prev].filter(id => currentIds.has(id) && !reactivatedIds.has(id))
+      );
       if (cleaned.size !== prev.size) return cleaned;
       return prev;
     });
