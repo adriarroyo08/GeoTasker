@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Plus, Sparkles, Loader2 } from 'lucide-react';
 import { Task, GeoLocation } from '../types';
 import { TaskCard } from './TaskCard';
@@ -28,6 +28,10 @@ export const TaskList: React.FC<TaskListProps> = ({
   setEditingTask,
 }) => {
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+
+  const handleDeleteClick = useCallback((id: string) => {
+    setTaskToDelete(id);
+  }, []);
 
   return (
     <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-4 max-w-2xl mx-auto w-full">
@@ -76,7 +80,7 @@ export const TaskList: React.FC<TaskListProps> = ({
             userLat={userLocation?.lat}
             userLng={userLocation?.lng}
             onToggle={toggleTask}
-            onDeleteClick={setTaskToDelete}
+            onDeleteClick={handleDeleteClick}
             onEdit={setEditingTask}
           />
         ))

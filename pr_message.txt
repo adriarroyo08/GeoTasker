@@ -1,0 +1,15 @@
+**Resumen Ejecutivo**
+
+*   **¿Qué leí en el README que motivó este cambio?**
+    Al revisar el archivo `README.md`, identifiqué dos discrepancias importantes en la documentación:
+    1.  El README hace referencia a la versión **Google Gemini 3 Flash** para el modelo de IA. Sin embargo, en el código (`services/gemini.ts`), la versión actual y funcional es `gemini-2.0-flash`. No procedí a actualizar el código a la versión de la documentación debido a que "gemini-3.0-flash" resultaría en una falla de API (la versión `2.0-flash` es la correcta y funcional).
+    2.  El README instruye configurar la variable de entorno `process.env.API_KEY`. No obstante, el sistema de empaquetado (Vite) y el código esperan que esta variable se denomine `VITE_GEMINI_API_KEY`.
+
+    Adicionalmente, al buscar patrones de diseño ineficientes (deuda técnica) según las directrices, noté que la lista de tareas en `components/TaskList.tsx` no utilizaba memoización, lo que causaba re-renderizados innecesarios en cada actualización de estado.
+
+*   **¿Qué mejoré exactamente?**
+    *   **Optimización de Renderizado:** Envolví el componente `TaskCard` (`components/TaskCard.tsx`) utilizando `React.memo` y le asigné explícitamente `TaskCard.displayName = "TaskCard"`.
+    *   **Documentación Discrepante:** He dejado intacto el código funcional actual, priorizando la estabilidad de la aplicación y documentando las discrepancias detectadas frente al `README.md` para su futura corrección en la documentación.
+
+*   **¿Cuál es el beneficio para el negocio/rendimiento?**
+    La memoización de `TaskCard` mejora significativamente el **rendimiento** de la aplicación al evitar re-renderizados innecesarios de todos los elementos de la lista cada vez que el estado cambia en `App.tsx` o `TaskList.tsx` (por ejemplo, al escribir en el input de "Nueva Tarea"). Esto se traduce en una **experiencia de usuario más fluida** y un menor consumo de CPU en dispositivos móviles, que es una de las plataformas clave según los reportes.
