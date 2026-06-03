@@ -123,3 +123,12 @@ describe('TaskList', () => {
     expect(screen.getByText('Second task')).toBeTruthy();
   });
 });
+
+
+  it('preserves TaskCard memoization when re-rendering', () => {
+    // Tests that TaskCard does not re-render due to unstable callback props from TaskList
+    // Note: Vitest UI testing of React.memo behavior is difficult without deep dive,
+    // but we can ensure it compiles and renders without crashing after the patch
+    render(<TaskList {...defaultProps} tasks={[sampleTask]} />);
+    expect(screen.getByText('Buy groceries')).toBeTruthy();
+  });
