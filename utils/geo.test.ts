@@ -80,3 +80,121 @@ describe('formatDistance', () => {
     expect(formatDistance(1999)).toBe('2.0km');
   });
 });
+
+describe('getCurrentPositionWithFallback', () => {
+  const originalGeolocation = global.navigator.geolocation;
+
+  afterEach(() => {
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: originalGeolocation,
+      writable: true,
+    });
+  });
+
+  it('should resolve with position on high-accuracy success', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+    const mockGeolocation = {
+      getCurrentPosition: vitest.fn((success, error, options) => {
+        if (options.enableHighAccuracy) {
+          success(mockPosition);
+        }
+      })
+    };
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      writable: true,
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const position = await getCurrentPositionWithFallback();
+    expect(position).toEqual(mockPosition);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+
+  it('should fallback to low-accuracy on timeout (code 3)', async () => {
+    const mockPosition = { coords: { latitude: 30, longitude: 40 } };
+    const mockGeolocation = {
+      getCurrentPosition: vitest.fn((success, error, options) => {
+        if (options.enableHighAccuracy) {
+          error({ code: 3, message: 'Timeout' });
+        } else {
+          success(mockPosition);
+        }
+      })
+    };
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      writable: true,
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const position = await getCurrentPositionWithFallback();
+    expect(position).toEqual(mockPosition);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+
+  it('should fallback to low-accuracy on position unavailable (code 2)', async () => {
+    const mockPosition = { coords: { latitude: 50, longitude: 60 } };
+    const mockGeolocation = {
+      getCurrentPosition: vitest.fn((success, error, options) => {
+        if (options.enableHighAccuracy) {
+          error({ code: 2, message: 'Position unavailable' });
+        } else {
+          success(mockPosition);
+        }
+      })
+    };
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      writable: true,
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const position = await getCurrentPositionWithFallback();
+    expect(position).toEqual(mockPosition);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+
+  it('should reject if both high and low accuracy fail', async () => {
+    const mockGeolocation = {
+      getCurrentPosition: vitest.fn((success, error, options) => {
+        if (options.enableHighAccuracy) {
+          error({ code: 3, message: 'Timeout' });
+        } else {
+          error({ code: 1, message: 'Permission denied' });
+        }
+      })
+    };
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      writable: true,
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: 'Permission denied' });
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+
+  it('should reject immediately on permission denied (code 1)', async () => {
+    const mockGeolocation = {
+      getCurrentPosition: vitest.fn((success, error, options) => {
+        if (options.enableHighAccuracy) {
+          error({ code: 1, message: 'Permission denied' });
+        }
+      })
+    };
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      writable: true,
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: 'Permission denied' });
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+});
