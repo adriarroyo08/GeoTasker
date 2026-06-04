@@ -80,3 +80,79 @@ describe('formatDistance', () => {
     expect(formatDistance(1999)).toBe('2.0km');
   });
 });
+
+describe('getCurrentPositionWithFallback', () => {
+  let originalGeolocation: any;
+
+  beforeEach(() => {
+    originalGeolocation = global.navigator.geolocation;
+    global.navigator = {
+      ...global.navigator,
+      geolocation: {
+        getCurrentPosition: vitest.fn(),
+        watchPosition: vitest.fn(),
+        clearWatch: vitest.fn(),
+      }
+    } as any;
+  });
+
+  afterEach(() => {
+    global.navigator.geolocation = originalGeolocation;
+    vitest.clearAllMocks();
+  });
+
+  it('should resolve position when high accuracy succeeds', async () => {
+    const mockPos = { coords: { latitude: 10, longitude: 20 } };
+    const { getCurrentPositionWithFallback } = await import('./geo');
+
+    (global.navigator.geolocation.getCurrentPosition as any).mockImplementationOnce((success: any) => {
+      success(mockPos);
+    });
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPos);
+  });
+
+  it('should retry with low accuracy when high accuracy fails with timeout (code 3)', async () => {
+    const mockPos = { coords: { latitude: 10, longitude: 20 } };
+    const { getCurrentPositionWithFallback } = await import('./geo');
+
+    (global.navigator.geolocation.getCurrentPosition as any)
+      .mockImplementationOnce((success: any, error: any) => {
+        error({ code: 3, message: 'Timeout' });
+      })
+      .mockImplementationOnce((success: any) => {
+        success(mockPos);
+      });
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPos);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+
+  it('should reject if both high accuracy and low accuracy fail', async () => {
+    const { getCurrentPositionWithFallback } = await import('./geo');
+
+    (global.navigator.geolocation.getCurrentPosition as any)
+      .mockImplementationOnce((success: any, error: any) => {
+        error({ code: 3, message: 'Timeout' });
+      })
+      .mockImplementationOnce((success: any, error: any) => {
+        error({ code: 1, message: 'Permission Denied' });
+      });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: 'Permission Denied' });
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+
+  it('should reject directly if high accuracy fails with permission denied (code 1)', async () => {
+    const { getCurrentPositionWithFallback } = await import('./geo');
+
+    (global.navigator.geolocation.getCurrentPosition as any).mockImplementationOnce((success: any, error: any) => {
+      error({ code: 1, message: 'Permission Denied' });
+    });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: 'Permission Denied' });
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+});
