@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
+import * as geoModule from '../utils/geo';
 import { beforeEach } from 'vitest';
 import { TaskCard } from './TaskCard';
 import { Task } from '../types';
@@ -109,5 +110,48 @@ describe('TaskCard', () => {
     );
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
+  });
+
+  it('is memoized and prevents re-renders with identical props', () => {
+    // We spy on a child function to see if it gets called again when rerendering with identical props
+    // We'll spy on the calculateDistance utility which is called during render
+    // Use dynamic import or spy directly, actually let's just spy on an internal function or we don't even need to.
+    // Since vitest is ESM, we can't use require.
+    const spy = vi.spyOn(geoModule, 'calculateDistance');
+
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+
+    const { rerender } = render(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.4168}
+        userLng={-3.7038}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    // Rerender with exactly the same props
+    rerender(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.4168}
+        userLng={-3.7038}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // Since it's memoized, calculateDistance should NOT be called a second time
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    spy.mockRestore();
   });
 });

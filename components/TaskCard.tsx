@@ -12,7 +12,7 @@ interface TaskCardProps {
   onEdit: (task: Task) => void;
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onToggle, onDeleteClick, onEdit }) => {
+export const TaskCard: React.FC<TaskCardProps> = React.memo(({ task, userLat, userLng, onToggle, onDeleteClick, onEdit }) => {
   let distanceStr = '';
   if (task.location && userLat !== undefined && userLng !== undefined) {
     const dist = calculateDistance(userLat, userLng, task.location.lat, task.location.lng);
@@ -103,4 +103,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, userLat, userLng, onTo
       </div>
     </div>
   );
-};
+});
+
+TaskCard.displayName = 'TaskCard';
