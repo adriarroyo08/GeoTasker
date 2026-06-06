@@ -24,6 +24,10 @@ input, textarea, select {
 }
 
 /* Safe scroll padding for bottom nav */
+@utility pt-safe {
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+}
+
 .scroll-pb-safe {
   scroll-padding-bottom: calc(4rem + env(safe-area-inset-bottom));
 }
