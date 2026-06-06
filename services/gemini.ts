@@ -23,7 +23,7 @@ export const parseTaskWithGemini = async (input: string): Promise<{ title: strin
     );
 
     const fetchPromise = ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3-flash",
       contents: `Analiza la siguiente entrada de usuario para una aplicación de tareas y extrae la información en formato JSON.
       Entrada: ${sanitizedInput}
       Si el usuario menciona un lugar, extráelo en "suggestedLocationName". Si no, déjalo vacío.
