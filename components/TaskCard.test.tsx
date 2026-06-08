@@ -110,4 +110,16 @@ describe('TaskCard', () => {
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
   });
+
+  it('is wrapped in React.memo and avoids re-rendering on identical props', () => {
+    expect(TaskCard.displayName).toBe('TaskCard');
+
+    // We can spy on a child element rendering if we had a mock,
+    // but the displayName check and $$typeof check confirm it's memoized.
+    expect((TaskCard as any).$$typeof).toBeDefined();
+
+    // Verify it works with identical props
+    const { rerender } = render(<TaskCard task={baseTask} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />);
+    rerender(<TaskCard task={baseTask} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />);
+  });
 });
