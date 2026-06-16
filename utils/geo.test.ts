@@ -80,3 +80,95 @@ describe('formatDistance', () => {
     expect(formatDistance(1999)).toBe('2.0km');
   });
 });
+
+describe('getCurrentPositionWithFallback', () => {
+  let originalGeolocation: Geolocation;
+
+  beforeEach(() => {
+    // Save original object
+    originalGeolocation = global.navigator.geolocation;
+
+    // Default mock object
+    const mockGeolocation = {
+      getCurrentPosition: vitest.fn(),
+      watchPosition: vitest.fn(),
+      clearWatch: vitest.fn(),
+    };
+
+    // Override global navigator object
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      writable: true,
+    });
+  });
+
+  afterEach(() => {
+    // Restore original object
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: originalGeolocation,
+      writable: true,
+    });
+    vitest.clearAllMocks();
+  });
+
+  it('should reject if geolocation is not supported', async () => {
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: undefined,
+      writable: true,
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toThrow('Geolocation is not supported by this browser.');
+  });
+
+  it('should resolve with position on high accuracy success', async () => {
+    const mockPosition = { coords: { latitude: 40, longitude: -74 } };
+    global.navigator.geolocation.getCurrentPosition = vitest.fn((success, error, options) => {
+      if (options.enableHighAccuracy) {
+        success(mockPosition);
+      }
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const result = await getCurrentPositionWithFallback();
+
+    expect(result).toEqual(mockPosition);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+
+  it('should fallback to low accuracy if high accuracy fails', async () => {
+    const mockError = { code: 3, message: 'Timeout' };
+    const mockFallbackPosition = { coords: { latitude: 41, longitude: -75 } };
+
+    global.navigator.geolocation.getCurrentPosition = vitest.fn((success, error, options) => {
+      if (options.enableHighAccuracy) {
+        error(mockError);
+      } else {
+        success(mockFallbackPosition);
+      }
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const result = await getCurrentPositionWithFallback();
+
+    expect(result).toEqual(mockFallbackPosition);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+
+  it('should reject if both high and low accuracy fail', async () => {
+    const mockHighAccError = { code: 3, message: 'High acc timeout' };
+    const mockLowAccError = { code: 1, message: 'Permission denied' };
+
+    global.navigator.geolocation.getCurrentPosition = vitest.fn((success, error, options) => {
+      if (options.enableHighAccuracy) {
+        error(mockHighAccError);
+      } else {
+        error(mockLowAccError);
+      }
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual(mockLowAccError);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+});
