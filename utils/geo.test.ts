@@ -80,3 +80,84 @@ describe('formatDistance', () => {
     expect(formatDistance(1999)).toBe('2.0km');
   });
 });
+
+import { vi, afterEach } from 'vitest';
+import { getCurrentPositionWithFallback } from './geo';
+
+describe('getCurrentPositionWithFallback', () => {
+  const originalGeolocation = global.navigator?.geolocation;
+
+  afterEach(() => {
+    if (global.navigator) {
+      Object.defineProperty(global.navigator, 'geolocation', {
+        value: originalGeolocation,
+        configurable: true,
+      });
+    }
+    vi.restoreAllMocks();
+  });
+
+  it('should resolve with high accuracy if successful', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } } as GeolocationPosition;
+    const getCurrentPositionMock = vi.fn((successCb, errorCb, options) => {
+      successCb(mockPosition);
+    });
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: { getCurrentPosition: getCurrentPositionMock },
+      configurable: true,
+    });
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPosition);
+    expect(getCurrentPositionMock).toHaveBeenCalledTimes(1);
+    expect(getCurrentPositionMock.mock.calls[0][2]).toEqual({
+      enableHighAccuracy: true,
+      timeout: 20000,
+      maximumAge: 5000,
+    });
+  });
+
+  it('should fallback to low accuracy if high accuracy fails with code 3', async () => {
+    const mockPosition = { coords: { latitude: 30, longitude: 40 } } as GeolocationPosition;
+    const getCurrentPositionMock = vi.fn()
+      .mockImplementationOnce((successCb, errorCb, options) => {
+        errorCb({ code: 3, message: 'Timeout' });
+      })
+      .mockImplementationOnce((successCb, errorCb, options) => {
+        successCb(mockPosition);
+      });
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: { getCurrentPosition: getCurrentPositionMock },
+      configurable: true,
+    });
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPosition);
+    expect(getCurrentPositionMock).toHaveBeenCalledTimes(2);
+    expect(getCurrentPositionMock.mock.calls[1][2]).toEqual({
+      enableHighAccuracy: false,
+      timeout: 30000,
+      maximumAge: 60000,
+    });
+  });
+
+  it('should reject if low accuracy also fails', async () => {
+    const getCurrentPositionMock = vi.fn()
+      .mockImplementationOnce((successCb, errorCb, options) => {
+        errorCb({ code: 3, message: 'Timeout' });
+      })
+      .mockImplementationOnce((successCb, errorCb, options) => {
+        errorCb({ code: 1, message: 'Denied' });
+      });
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: { getCurrentPosition: getCurrentPositionMock },
+      configurable: true,
+    });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: 'Denied' });
+    expect(getCurrentPositionMock).toHaveBeenCalledTimes(2);
+  });
+});
