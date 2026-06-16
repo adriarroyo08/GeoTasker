@@ -1,3 +1,4 @@
+import * as geoUtils from '../utils/geo';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
@@ -109,5 +110,26 @@ describe('TaskCard', () => {
     );
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
+  });
+
+  it('does not re-render when props remain the same (React.memo)', () => {
+    // We can spy on calculateDistance from geo.ts which is called inside TaskCard's render body
+    // if task.location and userLat/userLng are defined.
+    // However, vitest needs to be told to spy on it.
+    // Alternatively, we can use a mock function for a child component or utility.
+    // Given the memory rule: "spy on an internal utility (e.g., vi.spyOn), render the component, rerender with the exact same props, and assert the spy was only called during the initial render."
+    const spy = vi.spyOn(geoUtils, 'calculateDistance');
+
+    const taskWithLoc = { ...baseTask, location: { lat: 0, lng: 0 } };
+    const { rerender } = render(
+      <TaskCard task={taskWithLoc} userLat={0} userLng={0} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />
+    );
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    // Rerender with identical props
+    rerender(
+      <TaskCard task={taskWithLoc} userLat={0} userLng={0} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />
+    );
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });
