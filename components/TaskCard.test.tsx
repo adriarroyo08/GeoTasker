@@ -110,4 +110,36 @@ describe('TaskCard', () => {
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
   });
+
+  it('memoizes the component and prevents re-rendering with exact same props', async () => {
+    const geoUtils = await import('../utils/geo');
+    const spy = vi.spyOn(geoUtils, 'calculateDistance');
+
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+
+    const props = {
+      task: taskWithLocation,
+      userLat: 40.4168,
+      userLng: -3.7038,
+      onToggle: mockOnToggle,
+      onDeleteClick: mockOnDeleteClick,
+      onEdit: mockOnEdit
+    };
+
+    const { rerender } = render(<TaskCard {...props} />);
+
+    // The spy should be called once on initial render
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    // Rerender with the exact same props
+    rerender(<TaskCard {...props} />);
+
+    // The spy should still only have been called once, proving no re-render occurred
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    spy.mockRestore();
+  });
 });
