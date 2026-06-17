@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
@@ -110,4 +111,47 @@ describe('TaskCard', () => {
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
   });
+
+  it('does not re-render when props remain the same (React.memo)', async () => {
+    // Import utils to spy on a function called during render
+    const geoUtils = await import('../utils/geo');
+    const spyCalculateDistance = vi.spyOn(geoUtils, 'calculateDistance');
+
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+
+    const { rerender } = render(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.4168}
+        userLng={-3.7038}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    const initialCallCount = spyCalculateDistance.mock.calls.length;
+    expect(initialCallCount).toBeGreaterThan(0);
+
+    // Re-render with the exact same props
+    rerender(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.4168}
+        userLng={-3.7038}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // Assert that calculateDistance was not called again, proving the component did not re-render
+    expect(spyCalculateDistance.mock.calls.length).toBe(initialCallCount);
+
+    spyCalculateDistance.mockRestore();
+  });
+
 });
