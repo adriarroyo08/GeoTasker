@@ -3,3 +3,8 @@ dist
 .env
 .DS_Store
 preview.log
+preview.log
+/home/jules/verification/verify_mobile.py
+verification_mobile.png
+videos/
+screenshots/
