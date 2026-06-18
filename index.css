@@ -2,6 +2,10 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@utility pt-safe {
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+}
+
 /* Global styles */
 html, body, #root {
   height: 100%;
