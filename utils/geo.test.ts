@@ -80,3 +80,76 @@ describe('formatDistance', () => {
     expect(formatDistance(1999)).toBe('2.0km');
   });
 });
+
+import { vi, beforeEach, afterEach } from 'vitest';
+import { getCurrentPositionWithFallback } from './geo';
+
+describe('getCurrentPositionWithFallback', () => {
+  const originalGeolocation = global.navigator?.geolocation;
+
+  beforeEach(() => {
+    // @ts-ignore
+    global.navigator = global.navigator || {};
+    // @ts-ignore
+    global.navigator.geolocation = {
+      getCurrentPosition: vi.fn(),
+    };
+  });
+
+  afterEach(() => {
+    // @ts-ignore
+    global.navigator.geolocation = originalGeolocation;
+  });
+
+  it('should resolve successfully on first attempt (high accuracy)', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+    // @ts-ignore
+    global.navigator.geolocation.getCurrentPosition.mockImplementationOnce((successCb) => {
+      successCb(mockPosition);
+    });
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPosition);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.any(Function),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 }
+    );
+  });
+
+  it('should reject immediately if error code is 1 (Permission denied)', async () => {
+    const mockError = { code: 1, message: 'Permission denied' };
+    // @ts-ignore
+    global.navigator.geolocation.getCurrentPosition.mockImplementationOnce((successCb, errorCb) => {
+      errorCb(mockError);
+    });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual(mockError);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+
+  it('should fallback to low accuracy and resolve if first attempt fails with timeout', async () => {
+    const mockError = { code: 3, message: 'Timeout' };
+    const mockPosition = { coords: { latitude: 30, longitude: 40 } };
+
+    // @ts-ignore
+    global.navigator.geolocation.getCurrentPosition
+      .mockImplementationOnce((successCb, errorCb) => {
+        errorCb(mockError);
+      })
+      .mockImplementationOnce((successCb) => {
+        successCb(mockPosition);
+      });
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPosition);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenNthCalledWith(
+      2,
+      expect.any(Function),
+      expect.any(Function),
+      { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
+    );
+  });
+});
