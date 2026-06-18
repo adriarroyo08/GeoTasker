@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { calculateDistance, formatDistance } from './geo';
+import { calculateDistance, formatDistance, getCurrentPositionWithFallback } from './geo';
+import { vi } from 'vitest';
 
 describe('calculateDistance', () => {
   it('should return 0 for the same coordinates', () => {
@@ -78,5 +79,78 @@ describe('formatDistance', () => {
   it('should handle fractional kilometer values correctly', () => {
     expect(formatDistance(1050)).toBe('1.1km');
     expect(formatDistance(1999)).toBe('2.0km');
+  });
+});
+
+describe('getCurrentPositionWithFallback', () => {
+  let originalGeolocation: any;
+
+  beforeEach(() => {
+    originalGeolocation = global.navigator.geolocation;
+
+    // Explicitly define global.navigator if missing
+    if (!global.navigator) {
+      (global as any).navigator = {};
+    }
+  });
+
+  afterEach(() => {
+    global.navigator.geolocation = originalGeolocation;
+    vi.clearAllMocks();
+  });
+
+  it('should reject if geolocation is not supported', async () => {
+    global.navigator.geolocation = undefined as any;
+    await expect(getCurrentPositionWithFallback()).rejects.toThrow('Geolocalización no soportada en este navegador.');
+  });
+
+  it('should resolve using high accuracy if it succeeds immediately', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+    global.navigator.geolocation = {
+      getCurrentPosition: vi.fn((successCb) => successCb(mockPosition)),
+    } as any;
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPosition);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    const callArgs = (global.navigator.geolocation.getCurrentPosition as any).mock.calls[0];
+    expect(callArgs[2]).toEqual({ enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 });
+  });
+
+  it('should fallback to low accuracy if high accuracy fails', async () => {
+    const mockPositionLow = { coords: { latitude: 30, longitude: 40 } };
+
+    let callCount = 0;
+    global.navigator.geolocation = {
+      getCurrentPosition: vi.fn((successCb, errorCb, options) => {
+        callCount++;
+        if (callCount === 1) {
+          // Fail high accuracy
+          errorCb({ code: 3, message: 'Timeout' });
+        } else if (callCount === 2) {
+          // Succeed low accuracy
+          successCb(mockPositionLow);
+        }
+      }),
+    } as any;
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPositionLow);
+
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+
+    const secondCallArgs = (global.navigator.geolocation.getCurrentPosition as any).mock.calls[1];
+    expect(secondCallArgs[2]).toEqual({ enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 });
+  });
+
+  it('should reject if both high and low accuracy fail', async () => {
+    global.navigator.geolocation = {
+      getCurrentPosition: vi.fn((successCb, errorCb) => {
+        errorCb({ code: 1, message: 'Denied' });
+      }),
+    } as any;
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: 'Denied' });
   });
 });
