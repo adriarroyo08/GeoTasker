@@ -31,3 +31,41 @@ export const formatDistance = (meters: number): string => {
   }
   return `${(meters / 1000).toFixed(1)}km`;
 };
+export const getCurrentPositionWithFallback = (): Promise<GeolocationPosition> => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation is not supported by your browser'));
+      return;
+    }
+
+    const highAccuracyOptions: PositionOptions = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 5000,
+    };
+
+    const lowAccuracyOptions: PositionOptions = {
+      enableHighAccuracy: false,
+      timeout: 15000,
+      maximumAge: 60000,
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      resolve,
+      (highAccError) => {
+        // Fallback to low accuracy if high accuracy fails (e.g. timeout or position unavailable)
+        if (highAccError.code === 2 || highAccError.code === 3) {
+          navigator.geolocation.getCurrentPosition(
+            resolve,
+            (lowAccError) => reject(lowAccError),
+            lowAccuracyOptions
+          );
+        } else {
+          // If it's a permission denied error (code 1), don't fallback, just reject
+          reject(highAccError);
+        }
+      },
+      highAccuracyOptions
+    );
+  });
+};

@@ -80,3 +80,109 @@ describe('formatDistance', () => {
     expect(formatDistance(1999)).toBe('2.0km');
   });
 });
+
+describe('getCurrentPositionWithFallback', () => {
+  let mockGeolocation: any;
+
+  beforeEach(() => {
+    mockGeolocation = {
+      getCurrentPosition: vi.fn(),
+    };
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should reject if geolocation is not supported', async () => {
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: undefined,
+      configurable: true,
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toThrow('Geolocation is not supported by your browser');
+  });
+
+  it('should resolve immediately if high accuracy succeeds', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+    mockGeolocation.getCurrentPosition.mockImplementationOnce((success: any) => {
+      success(mockPosition);
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const result = await getCurrentPositionWithFallback();
+
+    expect(result).toEqual(mockPosition);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.any(Function),
+      expect.objectContaining({ enableHighAccuracy: true })
+    );
+  });
+
+  it('should reject immediately if high accuracy fails with permission denied (code 1)', async () => {
+    const mockError = { code: 1, message: 'Permission denied' };
+    mockGeolocation.getCurrentPosition.mockImplementationOnce((success: any, error: any) => {
+      error(mockError);
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual(mockError);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(1); // Should not fallback
+  });
+
+  it('should fallback to low accuracy if high accuracy fails with timeout (code 3)', async () => {
+    const mockTimeoutError = { code: 3, message: 'Timeout' };
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+
+    // First call (high acc) fails, second call (low acc) succeeds
+    mockGeolocation.getCurrentPosition
+      .mockImplementationOnce((success: any, error: any) => {
+        error(mockTimeoutError);
+      })
+      .mockImplementationOnce((success: any) => {
+        success(mockPosition);
+      });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const result = await getCurrentPositionWithFallback();
+
+    expect(result).toEqual(mockPosition);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenNthCalledWith(
+      1,
+      expect.any(Function),
+      expect.any(Function),
+      expect.objectContaining({ enableHighAccuracy: true })
+    );
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenNthCalledWith(
+      2,
+      expect.any(Function),
+      expect.any(Function),
+      expect.objectContaining({ enableHighAccuracy: false })
+    );
+  });
+
+  it('should reject if both high and low accuracy fail', async () => {
+    const mockTimeoutError = { code: 3, message: 'Timeout' };
+    const mockLowAccError = { code: 2, message: 'Position unavailable' };
+
+    mockGeolocation.getCurrentPosition
+      .mockImplementationOnce((success: any, error: any) => {
+        error(mockTimeoutError);
+      })
+      .mockImplementationOnce((success: any, error: any) => {
+        error(mockLowAccError);
+      });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual(mockLowAccError);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+});
