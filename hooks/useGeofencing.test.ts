@@ -172,6 +172,20 @@ describe('useGeofencing', () => {
     expect(result.current.locationError).toBe('Permiso de ubicación denegado.');
   });
 
+  it('should not fallback to low accuracy when permission is denied (code 1)', () => {
+    renderHook(() => useGeofencing([]));
+
+    expect(watchPositionMock).toHaveBeenCalledTimes(1);
+    const errorCallback = watchPositionMock.mock.calls[0][1];
+
+    act(() => {
+      errorCallback({ code: 1, message: 'Permission denied' } as GeolocationPositionError);
+    });
+
+    // It should immediately reject and not try to call watchPosition again with low accuracy
+    expect(watchPositionMock).toHaveBeenCalledTimes(1);
+  });
+
   it('should use the latest user location when handling location error (prevent stale closure)', () => {
     const { result } = renderHook(() => useGeofencing([]));
     const successCallback = watchPositionMock.mock.calls[0][0];
@@ -191,7 +205,7 @@ describe('useGeofencing', () => {
       // Simulate an error like Timeout (code 3).
       // In the old code with the stale closure, !userLocation would be true
       // because the callback would close over the initial null userLocation.
-      errorCallback({ code: 1, message: 'Permission denied' } as GeolocationPositionError);
+      errorCallback({ code: 3, message: 'Timeout' } as GeolocationPositionError);
     });
 
     // Because userLocationRef.current is updated, the error message should NOT be set
