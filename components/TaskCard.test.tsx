@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
 import { TaskCard } from './TaskCard';
 import { Task } from '../types';
+import * as geo from '../utils/geo';
 
 describe('TaskCard', () => {
   const baseTask: Task = {
@@ -110,4 +111,46 @@ describe('TaskCard', () => {
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
   });
+
+  it('is optimized with React.memo', () => {
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+
+    // Spy on calculateDistance
+    const calculateDistanceSpy = vi.spyOn(geo, 'calculateDistance');
+
+    const { rerender } = render(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.0}
+        userLng={-3.0}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // Should be called on initial render
+    expect(calculateDistanceSpy).toHaveBeenCalledTimes(1);
+
+    // Rerender with exactly the same props
+    rerender(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.0}
+        userLng={-3.0}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // Should NOT be called again because React.memo prevents rerender
+    expect(calculateDistanceSpy).toHaveBeenCalledTimes(1);
+
+    calculateDistanceSpy.mockRestore();
+  });
+
 });
