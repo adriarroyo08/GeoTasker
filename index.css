@@ -28,3 +28,4 @@ input, textarea, select {
   scroll-padding-bottom: calc(4rem + env(safe-area-inset-bottom));
 }
 
+@utility pt-safe { padding-top: calc(0.75rem + env(safe-area-inset-top)); }
