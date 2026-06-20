@@ -110,4 +110,42 @@ describe('TaskCard', () => {
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
   });
+
+  it('does not re-render if props are identical (React.memo optimization)', async () => {
+    const geoModule = await import('../utils/geo');
+    const spy = vi.spyOn(geoModule, 'calculateDistance');
+
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+
+    const { rerender } = render(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.0000}
+        userLng={-3.0000}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    // Rerender with the exact same props
+    rerender(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.0000}
+        userLng={-3.0000}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // If memoization works, calculateDistance won't be called again
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
 });
