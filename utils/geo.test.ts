@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import { describe, it, expect } from 'vitest';
 import { calculateDistance, formatDistance } from './geo';
 
@@ -78,5 +79,66 @@ describe('formatDistance', () => {
   it('should handle fractional kilometer values correctly', () => {
     expect(formatDistance(1050)).toBe('1.1km');
     expect(formatDistance(1999)).toBe('2.0km');
+  });
+});
+
+describe('getCurrentPositionWithFallback', () => {
+  const originalGeolocation = global.navigator.geolocation;
+
+  beforeEach(() => {
+    // @ts-ignore
+    global.navigator.geolocation = {
+      getCurrentPosition: vi.fn(),
+    };
+  });
+
+  afterEach(() => {
+    // @ts-ignore
+    global.navigator.geolocation = originalGeolocation;
+  });
+
+  it('should resolve with position on high accuracy success', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+    // @ts-ignore
+    global.navigator.geolocation.getCurrentPosition.mockImplementationOnce((success) => {
+      success(mockPosition);
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const position = await getCurrentPositionWithFallback();
+    expect(position).toEqual(mockPosition);
+  });
+
+  it('should fallback to low accuracy if high accuracy fails with non-permission error', async () => {
+    const mockPosition = { coords: { latitude: 30, longitude: 40 } };
+    const mockError = { code: 3, message: 'Timeout' };
+
+    // @ts-ignore
+    global.navigator.geolocation.getCurrentPosition
+      .mockImplementationOnce((success, error) => {
+        error(mockError);
+      })
+      .mockImplementationOnce((success) => {
+        success(mockPosition);
+      });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    const position = await getCurrentPositionWithFallback();
+    expect(position).toEqual(mockPosition);
+  });
+
+  it('should reject immediately if high accuracy fails with permission denied (code 1)', async () => {
+    const mockError = { code: 1, message: 'Permission denied' };
+
+    // @ts-ignore
+    global.navigator.geolocation.getCurrentPosition.mockImplementationOnce((success, error) => {
+      error(mockError);
+    });
+
+    const { getCurrentPositionWithFallback } = await import('./geo');
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual(mockError);
+
+    // Ensure it didn't try the fallback
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
   });
 });
