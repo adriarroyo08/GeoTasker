@@ -74,7 +74,7 @@ interface GeofenceEvent { taskId: string; distance: number; timestamp: number }
 
 | Variable | Purpose |
 |----------|---------|
-| `GEMINI_API_KEY` | Google Gemini API key (injected as `import.meta.env.VITE_GEMINI_API_KEY`) |
+| `VITE_GEMINI_API_KEY` | Google Gemini API key (alternatively supports legacy `GEMINI_API_KEY`) |
 
 Set in `.env` at project root. Not required — the app gracefully falls back when missing.
 
