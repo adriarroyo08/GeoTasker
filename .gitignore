@@ -3,3 +3,7 @@ dist
 .env
 .DS_Store
 preview.log
+verification_mobile.png
+test.html
+verify_mobile_ui.py
+videos/
