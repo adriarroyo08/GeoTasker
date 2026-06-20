@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { calculateDistance, formatDistance } from './geo';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { calculateDistance, formatDistance, getCurrentPositionWithFallback } from './geo';
 
 describe('calculateDistance', () => {
   it('should return 0 for the same coordinates', () => {
@@ -78,5 +78,82 @@ describe('formatDistance', () => {
   it('should handle fractional kilometer values correctly', () => {
     expect(formatDistance(1050)).toBe('1.1km');
     expect(formatDistance(1999)).toBe('2.0km');
+  });
+});
+
+describe('getCurrentPositionWithFallback', () => {
+  const originalGeolocation = global.navigator.geolocation;
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: originalGeolocation,
+      configurable: true
+    });
+  });
+
+  it('should resolve with position on successful high accuracy request', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn().mockImplementation((success) => success(mockPosition))
+    };
+    Object.defineProperty(global.navigator, 'geolocation', { value: mockGeolocation, configurable: true });
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPosition);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+    expect(mockGeolocation.getCurrentPosition.mock.calls[0][2]).toEqual({ enableHighAccuracy: true, timeout: 5000, maximumAge: 0 });
+  });
+
+  it('should reject if geolocation is not supported', async () => {
+    Object.defineProperty(global.navigator, 'geolocation', { value: undefined, configurable: true });
+    await expect(getCurrentPositionWithFallback()).rejects.toThrow("Geolocation is not supported by this browser.");
+  });
+
+  it('should fallback to low accuracy if high accuracy fails with timeout (code 3)', async () => {
+    const mockPosition = { coords: { latitude: 30, longitude: 40 } };
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn().mockImplementation((success, error, options) => {
+        if (options.enableHighAccuracy) {
+          error({ code: 3 }); // Simulate timeout
+        } else {
+          success(mockPosition); // Low accuracy success
+        }
+      })
+    };
+    Object.defineProperty(global.navigator, 'geolocation', { value: mockGeolocation, configurable: true });
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPosition);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+    expect(mockGeolocation.getCurrentPosition.mock.calls[1][2]).toEqual({ enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
+  });
+
+  it('should reject if both high and low accuracy fail', async () => {
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn().mockImplementation((success, error, options) => {
+        if (options.enableHighAccuracy) {
+          error({ code: 3 }); // Simulate timeout
+        } else {
+          error({ code: 1, message: "Denied" }); // Low accuracy failure
+        }
+      })
+    };
+    Object.defineProperty(global.navigator, 'geolocation', { value: mockGeolocation, configurable: true });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: "Denied" });
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+
+  it('should reject immediately on permission denied (code 1) without fallback', async () => {
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn().mockImplementation((success, error, options) => {
+        error({ code: 1, message: "Denied" });
+      })
+    };
+    Object.defineProperty(global.navigator, 'geolocation', { value: mockGeolocation, configurable: true });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: "Denied" });
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(1); // No fallback attempted
   });
 });
