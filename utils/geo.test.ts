@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateDistance, formatDistance } from './geo';
+import { calculateDistance, formatDistance, getCurrentPositionWithFallback } from './geo';
 
 describe('calculateDistance', () => {
   it('should return 0 for the same coordinates', () => {
@@ -47,6 +47,92 @@ describe('calculateDistance', () => {
     const distance = calculateDistance(40.0, 0.0, 40.002, 0.0);
     expect(distance).toBeGreaterThan(150);
     expect(distance).toBeLessThan(300);
+  });
+});
+
+describe('getCurrentPositionWithFallback', () => {
+  let originalGeolocation: Geolocation;
+
+  beforeEach(() => {
+    originalGeolocation = global.navigator.geolocation;
+  });
+
+  afterEach(() => {
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: originalGeolocation,
+      configurable: true
+    });
+    vi.restoreAllMocks();
+  });
+
+  it('should resolve with high accuracy if successful', async () => {
+    const mockPos = { coords: { latitude: 10, longitude: 20 } };
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn((successCb, errorCb, options) => {
+        if (options.enableHighAccuracy) {
+          successCb(mockPos);
+        }
+      })
+    };
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      configurable: true
+    });
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPos);
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+
+  it('should fallback to low accuracy if high accuracy fails with code 3', async () => {
+    const mockPos = { coords: { latitude: 15, longitude: 25 } };
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn((successCb, errorCb, options) => {
+        if (options.enableHighAccuracy) {
+          errorCb({ code: 3 });
+        } else {
+          successCb(mockPos);
+        }
+      })
+    };
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      configurable: true
+    });
+
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPos);
+    expect(consoleWarnSpy).toHaveBeenCalledWith("High accuracy failed, falling back to low accuracy...");
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+
+  it('should reject if geolocation is not supported', async () => {
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: undefined,
+      configurable: true
+    });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toThrow("Geolocalización no soportada");
+  });
+
+  it('should reject immediately if error code is 1 (permission denied)', async () => {
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn((successCb, errorCb, options) => {
+        errorCb({ code: 1, message: "Permission denied" });
+      })
+    };
+
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: mockGeolocation,
+      configurable: true
+    });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual({ code: 1, message: "Permission denied" });
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(1); // No fallback
   });
 });
 
