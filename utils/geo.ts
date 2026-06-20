@@ -31,3 +31,40 @@ export const formatDistance = (meters: number): string => {
   }
   return `${(meters / 1000).toFixed(1)}km`;
 };
+export const getCurrentPositionWithFallback = (): Promise<GeolocationPosition> => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocalización no soportada en este navegador."));
+      return;
+    }
+
+    const highAccuracyOptions: PositionOptions = {
+      enableHighAccuracy: true,
+      timeout: 20000,
+      maximumAge: 10000,
+    };
+
+    const lowAccuracyOptions: PositionOptions = {
+      enableHighAccuracy: false,
+      timeout: 30000,
+      maximumAge: 60000,
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      resolve,
+      (error) => {
+        if (error.code === 3 || error.code === 2) {
+          console.warn("High accuracy failed, falling back to low accuracy...");
+          navigator.geolocation.getCurrentPosition(
+            resolve,
+            reject,
+            lowAccuracyOptions
+          );
+        } else {
+          reject(error);
+        }
+      },
+      highAccuracyOptions
+    );
+  });
+};
