@@ -23,8 +23,13 @@ vi.mock('@google/genai', () => {
 });
 
 describe('parseTaskWithGemini', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2023-10-27T10:00:00.000Z'));
   });
 
   it('should successfully parse a valid input with location', async () => {
@@ -53,6 +58,12 @@ describe('parseTaskWithGemini', () => {
       expect.objectContaining({
         model: 'gemini-2.0-flash',
         contents: expect.stringContaining(input)
+      })
+    );
+    expect(mockGenerateContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'gemini-2.0-flash',
+        contents: expect.stringContaining('La fecha actual es 2023-10-27T10:00:00.000Z.')
       })
     );
   });
