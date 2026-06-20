@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { calculateDistance, formatDistance } from './geo';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { calculateDistance, formatDistance, getCurrentPositionWithFallback } from './geo';
 
 describe('calculateDistance', () => {
   it('should return 0 for the same coordinates', () => {
@@ -78,5 +78,95 @@ describe('formatDistance', () => {
   it('should handle fractional kilometer values correctly', () => {
     expect(formatDistance(1050)).toBe('1.1km');
     expect(formatDistance(1999)).toBe('2.0km');
+  });
+});
+
+describe('getCurrentPositionWithFallback', () => {
+  let getCurrentPositionMock: any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getCurrentPositionMock = vi.fn();
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: { getCurrentPosition: getCurrentPositionMock },
+      configurable: true,
+      writable: true,
+    });
+  });
+
+  it('should reject if geolocation is not supported', async () => {
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toThrow("Geolocalización no soportada en este navegador.");
+  });
+
+  it('should resolve with position on high accuracy success', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+
+    // First call succeeds
+    getCurrentPositionMock.mockImplementationOnce((success: any) => {
+      success(mockPosition);
+    });
+
+    const pos = await getCurrentPositionWithFallback();
+    expect(pos).toEqual(mockPosition);
+    expect(getCurrentPositionMock).toHaveBeenCalledTimes(1);
+    expect(getCurrentPositionMock.mock.calls[0][2].enableHighAccuracy).toBe(true);
+  });
+
+  it('should retry with low accuracy if high accuracy fails with timeout', async () => {
+    const mockPosition = { coords: { latitude: 10, longitude: 20 } };
+    const timeoutError = { code: 3, message: 'Timeout' };
+
+    // First call fails with timeout
+    getCurrentPositionMock.mockImplementationOnce((_, errorCb: any) => {
+      errorCb(timeoutError);
+    });
+
+    // Second call succeeds
+    getCurrentPositionMock.mockImplementationOnce((successCb: any) => {
+      successCb(mockPosition);
+    });
+
+    const pos = await getCurrentPositionWithFallback();
+
+    expect(pos).toEqual(mockPosition);
+    expect(getCurrentPositionMock).toHaveBeenCalledTimes(2);
+    expect(getCurrentPositionMock.mock.calls[0][2].enableHighAccuracy).toBe(true);
+    expect(getCurrentPositionMock.mock.calls[1][2].enableHighAccuracy).toBe(false);
+  });
+
+  it('should reject if both high and low accuracy fail', async () => {
+    const timeoutError = { code: 3, message: 'Timeout' };
+    const lowAccuracyError = { code: 1, message: 'Permission Denied' };
+
+    // First call fails with timeout
+    getCurrentPositionMock.mockImplementationOnce((_, errorCb: any) => {
+      errorCb(timeoutError);
+    });
+
+    // Second call fails with another error
+    getCurrentPositionMock.mockImplementationOnce((_, errorCb: any) => {
+      errorCb(lowAccuracyError);
+    });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual(lowAccuracyError);
+    expect(getCurrentPositionMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('should reject immediately if high accuracy fails with permission denied', async () => {
+    const permissionError = { code: 1, message: 'Permission Denied' };
+
+    // First call fails with permission denied
+    getCurrentPositionMock.mockImplementationOnce((_, errorCb: any) => {
+      errorCb(permissionError);
+    });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual(permissionError);
+    expect(getCurrentPositionMock).toHaveBeenCalledTimes(1);
   });
 });
