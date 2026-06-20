@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { calculateDistance, formatDistance } from './geo';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { calculateDistance, formatDistance, getCurrentPositionWithFallback } from './geo';
 
 describe('calculateDistance', () => {
   it('should return 0 for the same coordinates', () => {
@@ -78,5 +78,62 @@ describe('formatDistance', () => {
   it('should handle fractional kilometer values correctly', () => {
     expect(formatDistance(1050)).toBe('1.1km');
     expect(formatDistance(1999)).toBe('2.0km');
+  });
+});
+
+describe('getCurrentPositionWithFallback', () => {
+  const originalNavigator = global.navigator;
+
+  beforeEach(() => {
+    // Reset global navigator mock before each test
+    // @ts-ignore
+    global.navigator = {
+      geolocation: {
+        getCurrentPosition: vi.fn(),
+      },
+    };
+  });
+
+  afterEach(() => {
+    // @ts-ignore
+    global.navigator = originalNavigator;
+  });
+
+  it('should resolve immediately on success', async () => {
+    const mockPos = { coords: { latitude: 10, longitude: 20 } };
+    // @ts-ignore
+    global.navigator.geolocation.getCurrentPosition.mockImplementationOnce((success) => success(mockPos));
+
+    const pos = await getCurrentPositionWithFallback({});
+    expect(pos).toBe(mockPos);
+  });
+
+  it('should reject immediately if error code is 1 (Permission denied)', async () => {
+    const mockError = { code: 1, message: 'Permission denied' };
+    // @ts-ignore
+    global.navigator.geolocation.getCurrentPosition.mockImplementationOnce((_, error) => error(mockError));
+
+    await expect(getCurrentPositionWithFallback({})).rejects.toEqual(mockError);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+
+  it('should fallback to low accuracy if high accuracy fails (timeout/error)', async () => {
+    const mockError = { code: 3, message: 'Timeout' };
+    const mockFallbackPos = { coords: { latitude: 30, longitude: 40 } };
+
+    // @ts-ignore
+    global.navigator.geolocation.getCurrentPosition
+      .mockImplementationOnce((_, error) => error(mockError)) // First call fails
+      .mockImplementationOnce((success) => success(mockFallbackPos)); // Second call succeeds
+
+    const pos = await getCurrentPositionWithFallback({ enableHighAccuracy: true });
+    expect(pos).toBe(mockFallbackPos);
+
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenLastCalledWith(
+      expect.any(Function),
+      expect.any(Function),
+      expect.objectContaining({ enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 })
+    );
   });
 });
