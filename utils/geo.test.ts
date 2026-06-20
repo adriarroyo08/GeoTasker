@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { calculateDistance, formatDistance } from './geo';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { calculateDistance, formatDistance, getCurrentPositionWithFallback } from './geo';
 
 describe('calculateDistance', () => {
   it('should return 0 for the same coordinates', () => {
@@ -78,5 +78,59 @@ describe('formatDistance', () => {
   it('should handle fractional kilometer values correctly', () => {
     expect(formatDistance(1050)).toBe('1.1km');
     expect(formatDistance(1999)).toBe('2.0km');
+  });
+});
+
+describe('getCurrentPositionWithFallback', () => {
+  let originalNavigator: any;
+
+  beforeEach(() => {
+    originalNavigator = global.navigator;
+    global.navigator = {
+      geolocation: {
+        getCurrentPosition: vi.fn(),
+      },
+    } as any;
+  });
+
+  afterEach(() => {
+    global.navigator = originalNavigator;
+    vi.restoreAllMocks();
+  });
+
+  it('should resolve with high accuracy if successful', async () => {
+    const mockPos = { coords: { latitude: 10, longitude: 20 } };
+    (global.navigator.geolocation.getCurrentPosition as any).mockImplementationOnce((success: any) => {
+      success(mockPos);
+    });
+
+    const result = await getCurrentPositionWithFallback();
+    expect(result).toEqual(mockPos);
+  });
+
+  it('should fallback to low accuracy if high accuracy fails with timeout (code 3)', async () => {
+    const mockError = { code: 3 };
+    const mockPos = { coords: { latitude: 10, longitude: 20 } };
+    (global.navigator.geolocation.getCurrentPosition as any)
+      .mockImplementationOnce((success: any, error: any) => {
+        error(mockError);
+      })
+      .mockImplementationOnce((success: any) => {
+        success(mockPos);
+      });
+
+    const result = await getCurrentPositionWithFallback();
+    expect(result).toEqual(mockPos);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+  });
+
+  it('should immediately reject if permission denied (code 1)', async () => {
+    const mockError = { code: 1 };
+    (global.navigator.geolocation.getCurrentPosition as any).mockImplementationOnce((success: any, error: any) => {
+      error(mockError);
+    });
+
+    await expect(getCurrentPositionWithFallback()).rejects.toEqual(mockError);
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
   });
 });
