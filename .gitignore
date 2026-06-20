@@ -3,3 +3,6 @@ dist
 .env
 .DS_Store
 preview.log
+dev_server.log
+server.log
+dev.log
