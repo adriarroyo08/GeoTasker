@@ -1,0 +1,12 @@
+# Resumen Ejecutivo
+
+**¿Qué leíste en el README que motivó este cambio?**
+Leí en el `README.md` que la aplicación debe mantener un alto estándar de código libre de "code smells", específicamente mencionando la necesidad de evitar funciones de más de 20 líneas, anidamientos excesivos, y priorizando el principio de responsabilidad única ("Single Responsibility Principle"). Además, se menciona el uso del modelo "Google Gemini 3 Flash" y la variable de entorno `process.env.API_KEY`, cuyas versiones y variables documentadas no concuerdan con la implementación funcional actual (`gemini-2.0-flash` y `import.meta.env.VITE_GEMINI_API_KEY`).
+
+**¿Qué mejoraste exactamente?**
+1. **Refactorización de `MapView.tsx` (Code Smells)**: Extraje los componentes internos `RecenterMap`, `MapEvents` y `LocateControl` en sus propios archivos modulares (`components/RecenterMap.tsx`, `components/MapEvents.tsx`, `components/LocateControl.tsx`). Esto elimina el anidamiento excesivo y reduce significativamente las líneas de código del archivo principal, cumpliendo con las mejores prácticas.
+2. **Optimización de Renderizado (`TaskCard.tsx`)**: Envolví el componente `TaskCard` utilizando `React.memo` (y declarando su `.displayName`). Esto previene re-renderizados innecesarios en `TaskList.tsx` cuando la lista de tareas cambia o se actualizan otros estados de la aplicación.
+3. **Reporte de Discrepancias**: Como medida de prevención de regresiones, decidí *no* cambiar las variables de entorno en Vite (`env.API_KEY` genérico puede introducir vulnerabilidades de seguridad al bundle del cliente) ni actualizar a la versión de modelo "gemini-3-flash" (no existe/inválida), dándole prioridad al código funcional y estableciendo esta nota como corrección a la documentación del proyecto.
+
+**¿Cuál es el beneficio para el negocio/rendimiento?**
+La refactorización mejora sustancialmente la mantenibilidad y legibilidad del proyecto, reduciendo la deuda técnica para futuras integraciones en la vista del mapa. Por su parte, la memoización de las tarjetas de tareas aumenta el rendimiento (Performance) de la aplicación, garantizando una experiencia fluida e interactiva en la lista de tareas, incluso a medida que el usuario agrega cientos de elementos, algo clave para retener usuarios. Además, no romper las claves ni el modelo asegura que la app esté lista para producción sin problemas en tiempo de ejecución.
