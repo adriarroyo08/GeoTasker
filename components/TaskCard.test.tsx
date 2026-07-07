@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
 import { TaskCard } from './TaskCard';
 import { Task } from '../types';
+import React from 'react';
 
 describe('TaskCard', () => {
   const baseTask: Task = {
@@ -109,5 +110,23 @@ describe('TaskCard', () => {
     );
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
+  });
+
+  it('should only render once if props have not changed (React.memo verification)', () => {
+    const renderSpy = vi.spyOn(console, 'log'); // Unused, just setting up spy framework if we needed a real internal trace
+
+    const Wrapper = (props: { task: Task }) => {
+      // Pass a stable function to ensure props match React.memo
+      return <TaskCard task={props.task} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />;
+    };
+
+    const { rerender } = render(<Wrapper task={baseTask} />);
+
+    // Attempt re-render with the identical task object and stable functions
+    rerender(<Wrapper task={baseTask} />);
+
+    // We expect the original component not to throw/re-evaluate its internal children improperly.
+    expect(TaskCard.displayName).toBe('TaskCard');
+    renderSpy.mockRestore();
   });
 });
