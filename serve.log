@@ -1,0 +1,77 @@
+ INFO  Accepting connections at http://localhost:3000
+ HTTP  8/3/2026 8:23:46 AM ::1 GET /
+ HTTP  8/3/2026 8:23:46 AM ::1 Returned 200 in 75 ms
+ HTTP  8/3/2026 8:23:46 AM ::1 GET /assets/index-B1-B-whw.js
+ HTTP  8/3/2026 8:23:46 AM ::1 GET /assets/leaflet-vendor-Dgihpmma.css
+ HTTP  8/3/2026 8:23:46 AM ::1 GET /assets/index-EDcafctS.css
+ HTTP  8/3/2026 8:23:46 AM ::1 GET /assets/vendor-B5IzoGO-.js
+ HTTP  8/3/2026 8:23:46 AM ::1 GET /assets/react-vendor-MDcB74Id.js
+ HTTP  8/3/2026 8:23:46 AM ::1 GET /assets/leaflet-vendor-DZPQU3jw.js
+ HTTP  8/3/2026 8:23:46 AM ::1 Returned 200 in 14 ms
+ HTTP  8/3/2026 8:23:46 AM ::1 Returned 200 in 14 ms
+ HTTP  8/3/2026 8:23:46 AM ::1 Returned 200 in 13 ms
+ HTTP  8/3/2026 8:23:46 AM ::1 Returned 200 in 15 ms
+ HTTP  8/3/2026 8:23:46 AM ::1 Returned 200 in 19 ms
+ HTTP  8/3/2026 8:23:46 AM ::1 Returned 200 in 28 ms
+ HTTP  8/3/2026 8:23:46 AM ::1 GET /registerSW.js
+ HTTP  8/3/2026 8:23:46 AM ::1 Returned 200 in 8 ms
+ HTTP  8/3/2026 8:23:46 AM ::1 GET /sw.js
+ HTTP  8/3/2026 8:23:46 AM ::1 Returned 200 in 3 ms
+ HTTP  8/3/2026 8:23:46 AM ::1 GET /workbox-9c191d2f.js
+ HTTP  8/3/2026 8:23:46 AM ::1 Returned 200 in 3 ms
+ HTTP  8/3/2026 8:23:47 AM ::1 GET /registerSW.js
+ HTTP  8/3/2026 8:23:47 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:23:47 AM ::1 GET /index.html
+ HTTP  8/3/2026 8:23:47 AM ::1 Returned 301 in 1 ms
+ HTTP  8/3/2026 8:23:47 AM ::1 GET /index
+ HTTP  8/3/2026 8:23:47 AM ::1 Returned 301 in 1 ms
+ HTTP  8/3/2026 8:23:47 AM ::1 GET /
+ HTTP  8/3/2026 8:23:47 AM ::1 Returned 200 in 2 ms
+ HTTP  8/3/2026 8:23:47 AM ::1 GET /icon.svg
+ HTTP  8/3/2026 8:23:47 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:23:47 AM ::1 GET /images/marker-shadow.png
+ HTTP  8/3/2026 8:23:47 AM ::1 Returned 200 in 2 ms
+ HTTP  8/3/2026 8:23:47 AM ::1 GET /images/marker-icon.png
+ HTTP  8/3/2026 8:23:47 AM ::1 Returned 200 in 2 ms
+ HTTP  8/3/2026 8:23:47 AM ::1 GET /images/marker-icon-green.png
+ HTTP  8/3/2026 8:23:47 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:23:47 AM ::1 GET /manifest.webmanifest
+ HTTP  8/3/2026 8:23:47 AM ::1 Returned 200 in 2 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /assets/index-B1-B-whw.js
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /assets/leaflet-vendor-Dgihpmma.css
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /assets/index-EDcafctS.css
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 5 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /assets/vendor-B5IzoGO-.js
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /assets/react-vendor-MDcB74Id.js
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /assets/leaflet-vendor-DZPQU3jw.js
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /registerSW.js
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 2 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 2 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 2 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 2 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /sw.js
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /workbox-9c191d2f.js
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /registerSW.js
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 2 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /index.html
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 301 in 1 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /index
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 301 in 1 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 2 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /icon.svg
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /images/marker-shadow.png
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /images/marker-icon.png
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 1 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /images/marker-icon-green.png
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 0 ms
+ HTTP  8/3/2026 8:24:50 AM ::1 GET /manifest.webmanifest
+ HTTP  8/3/2026 8:24:50 AM ::1 Returned 200 in 1 ms
