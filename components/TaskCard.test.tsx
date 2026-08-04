@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
 import { TaskCard } from './TaskCard';
+import * as geoUtils from '../utils/geo';
 import { Task } from '../types';
 
 describe('TaskCard', () => {
@@ -109,5 +110,31 @@ describe('TaskCard', () => {
     );
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
+  });
+
+  it('memoizes the component and only re-renders when props change', () => {
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+    const calcDistSpy = vi.spyOn(geoUtils, 'calculateDistance');
+
+    const { rerender } = render(
+      <TaskCard task={taskWithLocation} userLat={40.0} userLng={-3.0} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />
+    );
+
+    // Should be called initially
+    expect(calcDistSpy).toHaveBeenCalledTimes(1);
+
+    // Rerender with exact same props
+    rerender(
+      <TaskCard task={taskWithLocation} userLat={40.0} userLng={-3.0} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />
+    );
+
+    // Since it is memoized and props didn't change, the component should NOT re-render,
+    // hence the spy shouldn't be called again
+    expect(calcDistSpy).toHaveBeenCalledTimes(1);
+
+    calcDistSpy.mockRestore();
   });
 });
