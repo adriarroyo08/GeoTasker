@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
 import { TaskCard } from './TaskCard';
 import { Task } from '../types';
+import * as geoUtils from '../utils/geo';
 
 describe('TaskCard', () => {
   const baseTask: Task = {
@@ -109,5 +110,42 @@ describe('TaskCard', () => {
     );
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
+  });
+
+  it('memoizes the component and prevents unnecessary rerenders', () => {
+    const spy = vi.spyOn(geoUtils, 'calculateDistance');
+
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+
+    const { rerender } = render(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.4168}
+        userLng={-3.7038}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    // Rerender with the exact same props
+    rerender(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.4168}
+        userLng={-3.7038}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // The spy should not be called again because the component should not rerender
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });
