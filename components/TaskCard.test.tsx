@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
 import { TaskCard } from './TaskCard';
 import { Task } from '../types';
+import * as geo from '../utils/geo';
 
 describe('TaskCard', () => {
   const baseTask: Task = {
@@ -109,5 +110,57 @@ describe('TaskCard', () => {
     );
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
+  });
+
+  it('is memoized and only re-renders when props change', () => {
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+    const calcSpy = vi.spyOn(geo, 'calculateDistance');
+
+    const { rerender } = render(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.4168}
+        userLng={-3.7038}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // Initial render calls calculateDistance once
+    expect(calcSpy).toHaveBeenCalledTimes(1);
+
+    // Rerender with exactly the same props
+    rerender(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.4168}
+        userLng={-3.7038}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // The spy should still only have been called once, proving TaskCard didn't re-render
+    expect(calcSpy).toHaveBeenCalledTimes(1);
+
+    // Rerender with a new prop reference (e.g. new function or new user location)
+    rerender(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.4169}
+        userLng={-3.7038}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // The spy should now be called a second time
+    expect(calcSpy).toHaveBeenCalledTimes(2);
   });
 });
