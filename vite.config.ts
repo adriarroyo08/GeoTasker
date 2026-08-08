@@ -68,7 +68,7 @@ export default defineConfig(({ mode }) => {
         }
       },
       define: {
-        'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'import.meta.env.VITE_API_KEY': JSON.stringify(env.API_KEY)
       },
       resolve: {
         alias: {
@@ -80,7 +80,7 @@ export default defineConfig(({ mode }) => {
         globals: true,
         setupFiles: [],
         env: {
-          VITE_GEMINI_API_KEY: 'test_key'
+          VITE_API_KEY: 'test_key'
         }
       }
     };
