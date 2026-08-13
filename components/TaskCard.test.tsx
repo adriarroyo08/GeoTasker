@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
 import { TaskCard } from './TaskCard';
 import { Task } from '../types';
+import * as geoModule from '../utils/geo';
 
 describe('TaskCard', () => {
   const baseTask: Task = {
@@ -109,5 +110,40 @@ describe('TaskCard', () => {
     );
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
+  });
+
+  it('is memoized and prevents re-renders with stable props', () => {
+    const spy = vi.spyOn(geoModule, 'formatDistance');
+
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40, lng: -3, address: 'Test' }
+    };
+
+    const { rerender } = render(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40}
+        userLng={-3}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40}
+        userLng={-3}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });
