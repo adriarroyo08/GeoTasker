@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import 'leaflet/dist/leaflet.css';
+import { registerSW } from 'virtual:pwa-register';
+
+registerSW({ immediate: true });
+
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
