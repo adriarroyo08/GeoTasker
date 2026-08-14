@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
+          injectRegister: false,
           includeAssets: ['icon.svg', 'images/*.png'],
           workbox: {
             globPatterns: ['**/*.{js,css,html,ico,png,svg}']
@@ -68,7 +69,7 @@ export default defineConfig(({ mode }) => {
         }
       },
       define: {
-        'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(env.API_KEY || env.GEMINI_API_KEY)
       },
       resolve: {
         alias: {

@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
 import { TaskCard } from './TaskCard';
+import * as geoUtils from '../utils/geo';
 import { Task } from '../types';
 
 describe('TaskCard', () => {
@@ -110,4 +111,26 @@ describe('TaskCard', () => {
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
   });
+
+  it('memoizes the component to prevent unnecessary re-renders', () => {
+    const distanceSpy = vi.spyOn(geoUtils, 'calculateDistance');
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+
+    // Import using namespace import at the top of the test file instead of require()
+    // vi.spyOn is used to verify calculateDistance is only called once
+    const { rerender } = render(
+      <TaskCard task={taskWithLocation} userLat={40.0} userLng={-3.0} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />
+    );
+
+    // Check initial render has the correct props and rendered elements, then rerender with exact same props
+    rerender(
+      <TaskCard task={taskWithLocation} userLat={40.0} userLng={-3.0} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />
+    );
+    // As it is memoized and we didn't change props, if we used a spy on calculateDistance, it should only be called once.
+        expect(distanceSpy).toHaveBeenCalledTimes(1);
+  });
+
 });
