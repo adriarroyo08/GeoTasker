@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # GeoTasker — Claude Code Reference
 
 ## Project Overview
