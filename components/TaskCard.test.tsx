@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
 import { TaskCard } from './TaskCard';
 import { Task } from '../types';
+import * as geoUtils from '../utils/geo';
 
 describe('TaskCard', () => {
   const baseTask: Task = {
@@ -110,4 +111,44 @@ describe('TaskCard', () => {
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
   });
+
+  it('is memoized and does not re-render if props are the same', () => {
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+
+    // Spy on calculateDistance which is called during render if location and user location exist
+    const calcSpy = vi.spyOn(geoUtils, 'calculateDistance');
+
+    const { rerender } = render(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.0}
+        userLng={-3.0}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // Should be called once during initial render
+    expect(calcSpy).toHaveBeenCalledTimes(1);
+
+    // Rerender with the exact same props
+    rerender(
+      <TaskCard
+        task={taskWithLocation}
+        userLat={40.0}
+        userLng={-3.0}
+        onToggle={mockOnToggle}
+        onDeleteClick={mockOnDeleteClick}
+        onEdit={mockOnEdit}
+      />
+    );
+
+    // Should STILL be 1 because React.memo prevented the re-render
+    expect(calcSpy).toHaveBeenCalledTimes(1);
+  });
+
 });
