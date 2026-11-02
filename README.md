@@ -75,7 +75,7 @@ La arquitectura está construida sobre principios modernos de desarrollo web:
 2. Una **API Key de Google Gemini**.
 
 ### Variables de Entorno
-El proyecto requiere que la API Key esté disponible en el proceso de construcción. Asegúrate de configurar `process.env.API_KEY` en tu entorno de desarrollo o despliegue.
+La API Key se lee durante la construcción: define `GEMINI_API_KEY` en un fichero `.env` en la raíz o en el entorno de construcción; Vite la inyecta en el cliente como `import.meta.env.VITE_GEMINI_API_KEY`. Es opcional: sin ella la app funciona y la creación con IA usa un análisis básico.
 
 ### Instalación
 
