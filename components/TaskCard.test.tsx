@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { beforeEach } from 'vitest';
 import { TaskCard } from './TaskCard';
 import { Task } from '../types';
+import * as geo from '../utils/geo';
 
 describe('TaskCard', () => {
   const baseTask: Task = {
@@ -109,5 +110,26 @@ describe('TaskCard', () => {
     );
     const paragraphs = container.querySelectorAll('p');
     expect(paragraphs.length).toBe(0);
+  });
+
+  it('is memoized and does not re-render if props are the same', async () => {
+    const calculateDistanceSpy = vi.spyOn(geo, 'calculateDistance');
+
+    const taskWithLocation: Task = {
+      ...baseTask,
+      location: { lat: 40.4168, lng: -3.7038, address: 'Puerta del Sol' }
+    };
+
+    const { rerender } = render(
+      <TaskCard task={taskWithLocation} userLat={40.4168} userLng={-3.7038} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />
+    );
+
+    const initialCallCount = calculateDistanceSpy.mock.calls.length;
+
+    rerender(
+      <TaskCard task={taskWithLocation} userLat={40.4168} userLng={-3.7038} onToggle={mockOnToggle} onDeleteClick={mockOnDeleteClick} onEdit={mockOnEdit} />
+    );
+
+    expect(calculateDistanceSpy.mock.calls.length).toBe(initialCallCount);
   });
 });
