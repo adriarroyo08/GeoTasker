@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { registerSW } from 'virtual:pwa-register';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import 'leaflet/dist/leaflet.css';
 
@@ -17,3 +18,4 @@ root.render(
     </ErrorBoundary>
   </React.StrictMode>
 );
+registerSW();
