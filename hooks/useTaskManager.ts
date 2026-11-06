@@ -60,26 +60,24 @@ export const useTaskManager = () => {
     tasksRef.current = tasks;
   }, [tasks]);
 
+  const saveTasks = useCallback((tasksToSave: Task[]) => {
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const prunedTasks = tasksToSave.filter(
+      t => !t.isCompleted || t.createdAt > thirtyDaysAgo
+    );
+    localStorage.setItem('tasks', JSON.stringify(prunedTasks));
+  }, []);
+
   useEffect(() => {
     let timeoutId: number;
 
-    const saveTasks = () => {
-      // Prune completed tasks older than 30 days to prevent unbounded localStorage growth
-      const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-      const prunedTasks = tasksRef.current.filter(
-        t => !t.isCompleted || t.createdAt > thirtyDaysAgo
-      );
-      localStorage.setItem('tasks', JSON.stringify(prunedTasks));
-    };
-
-    // Debounced save with pruning of old completed tasks
     timeoutId = window.setTimeout(() => {
-      saveTasks();
+      saveTasks(tasksRef.current);
     }, 1000);
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        saveTasks();
+        saveTasks(tasksRef.current);
       }
     };
 
@@ -89,18 +87,14 @@ export const useTaskManager = () => {
       window.clearTimeout(timeoutId);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [tasks]);
+  }, [tasks, saveTasks]);
 
   // Handle final flush on component unmount only
   useEffect(() => {
     return () => {
-      const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-      const prunedTasks = tasksRef.current.filter(
-        t => !t.isCompleted || t.createdAt > thirtyDaysAgo
-      );
-      localStorage.setItem('tasks', JSON.stringify(prunedTasks));
+      saveTasks(tasksRef.current);
     };
-  }, []);
+  }, [saveTasks]);
 
   const addTask = useCallback((task: Task) => {
     setTasks(prev => [task, ...prev].slice(0, MAX_TASKS));

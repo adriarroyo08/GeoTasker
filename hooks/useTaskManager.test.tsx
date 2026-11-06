@@ -144,6 +144,37 @@ describe('useTaskManager', () => {
     expect(JSON.parse(localStorage.getItem('tasks')!)[0].title).toBe('Updated Task');
   });
 
+  it('should centralize saving and prune tasks older than 30 days', () => {
+    const { result, unmount } = renderHook(() => useTaskManager());
+
+    // Create an old completed task (31 days ago)
+    const thirtyOneDaysAgo = Date.now() - 31 * 24 * 60 * 60 * 1000;
+    const oldCompletedTask: Task = { id: 'old', title: 'Old', description: '', radius: 100, isCompleted: true, createdAt: thirtyOneDaysAgo };
+
+    // Create a new completed task
+    const newCompletedTask: Task = { id: 'new-comp', title: 'New Comp', description: '', radius: 100, isCompleted: true, createdAt: Date.now() };
+
+    // Create an old pending task (should NOT be pruned)
+    const oldPendingTask: Task = { id: 'old-pend', title: 'Old Pend', description: '', radius: 100, isCompleted: false, createdAt: thirtyOneDaysAgo };
+
+    act(() => {
+      result.current.addTask(oldCompletedTask);
+      result.current.addTask(newCompletedTask);
+      result.current.addTask(oldPendingTask);
+    });
+
+    // Unmount to trigger the centralized saveTasks
+    unmount();
+
+    const savedTasks = JSON.parse(localStorage.getItem('tasks')!);
+
+    // oldCompletedTask should be pruned, others kept
+    expect(savedTasks).toHaveLength(2);
+    expect(savedTasks.find((t: Task) => t.id === 'old')).toBeUndefined();
+    expect(savedTasks.find((t: Task) => t.id === 'new-comp')).toBeDefined();
+    expect(savedTasks.find((t: Task) => t.id === 'old-pend')).toBeDefined();
+  });
+
   it('should save immediately on unmount', () => {
     const { result, unmount } = renderHook(() => useTaskManager());
     const newTask: Task = { id: '1', title: 'New Task', description: '', radius: 100, isCompleted: false, createdAt: 123 };
