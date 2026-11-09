@@ -17,7 +17,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ view, setView, isSelecting
           setView(AppView.LIST);
           if (isSelectingLocation) cancelLocation();
         }}
-        className={`flex flex-col items-center gap-1 text-xs font-medium min-w-[44px] min-h-[44px] justify-center px-4 rounded-lg transition-colors ${view === AppView.LIST ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+        className={`flex flex-col items-center gap-1 text-xs font-medium min-w-[44px] min-h-[44px] justify-center px-4 rounded-lg transition-colors ${view === AppView.LIST ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
       >
         <List size={24} />
         Lista
@@ -25,7 +25,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ view, setView, isSelecting
 
       <button
          onClick={() => setView(AppView.MAP)}
-         className={`flex flex-col items-center gap-1 text-xs font-medium min-w-[44px] min-h-[44px] justify-center px-4 rounded-lg transition-colors ${view === AppView.MAP ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+         className={`flex flex-col items-center gap-1 text-xs font-medium min-w-[44px] min-h-[44px] justify-center px-4 rounded-lg transition-colors ${view === AppView.MAP ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
       >
         <MapIcon size={24} />
         Mapa

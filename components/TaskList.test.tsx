@@ -85,6 +85,11 @@ describe('TaskList', () => {
     expect(handleSmartAdd).not.toHaveBeenCalled();
   });
 
+  it('should expose an accessible name on the add button', () => {
+    render(<TaskList {...defaultProps} newTaskInput="" />);
+    expect(screen.getByRole('button', { name: 'Agregar tarea' })).toBeTruthy();
+  });
+
   it('should call handleSmartAdd when Agregar button is clicked', () => {
     const handleSmartAdd = vi.fn();
     render(<TaskList {...defaultProps} newTaskInput="Some task" handleSmartAdd={handleSmartAdd} />);

@@ -25,6 +25,11 @@ describe('EditTaskModal', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('should expose an accessible name on the close button', () => {
+    render(<EditTaskModal task={baseTask} isOpen={true} onClose={vi.fn()} onSave={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Cerrar' })).toBeTruthy();
+  });
+
   it('should not render when task is null', () => {
     const { container } = render(
       <EditTaskModal task={null} isOpen={true} onClose={vi.fn()} onSave={vi.fn()} />
