@@ -96,6 +96,7 @@ const LocateControl: React.FC<{
               : 'bg-white text-gray-700 hover:bg-gray-50'
         }`}
         title="Usar mi ubicación actual"
+        aria-label="Usar mi ubicación actual"
       >
         {loading ? <Loader2 className="animate-spin" size={24} /> : <Locate size={24} />}
         {selectingLocation && <span className="font-medium pr-1">Usar mi ubicación</span>}

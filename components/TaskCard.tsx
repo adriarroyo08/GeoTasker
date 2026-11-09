@@ -29,7 +29,7 @@ export const TaskCard = React.memo(({ task, userLat, userLng, onToggle, onDelete
     : 'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700';
 
   const textClass = task.isCompleted
-    ? 'line-through text-gray-500 dark:text-gray-500'
+    ? 'line-through text-gray-600 dark:text-gray-400'
     : 'text-gray-800 dark:text-white';
 
   return (
@@ -38,7 +38,7 @@ export const TaskCard = React.memo(({ task, userLat, userLng, onToggle, onDelete
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <button
             onClick={() => onToggle(task.id)}
-            className={`mt-1 transition-colors shrink-0 min-w-[44px] min-h-[44px] flex items-start justify-center pt-1 -ml-2 rounded-lg ${task.isCompleted ? 'text-green-500' : 'text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400'}`}
+            className={`mt-1 transition-colors shrink-0 min-w-[44px] min-h-[44px] flex items-start justify-center pt-1 -ml-2 rounded-lg ${task.isCompleted ? 'text-green-500' : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'}`}
             aria-label={task.isCompleted ? 'Marcar como pendiente' : 'Marcar como completada'}
           >
             {task.isCompleted ? <CheckCircle size={24} /> : <Circle size={24} />}
@@ -56,7 +56,7 @@ export const TaskCard = React.memo(({ task, userLat, userLng, onToggle, onDelete
               {task.location && (
                 <span className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded-md max-w-full ${
                   task.isCompleted
-                    ? 'text-gray-500 bg-gray-200 dark:bg-gray-700 dark:text-gray-400'
+                    ? 'text-gray-700 bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
                     : 'text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300'
                 }`}>
                   <MapPin size={12} className="mr-1 shrink-0" />
@@ -87,14 +87,14 @@ export const TaskCard = React.memo(({ task, userLat, userLng, onToggle, onDelete
         <div className="flex flex-col gap-0 shrink-0">
           <button
             onClick={() => onEdit(task)}
-            className="text-gray-300 hover:text-blue-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-blue-400 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg"
+            className="text-gray-500 hover:text-blue-600 transition-colors p-2 dark:text-gray-400 dark:hover:text-blue-400 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg"
             aria-label="Editar tarea"
           >
             <Pencil size={18} />
           </button>
           <button
             onClick={handleDelete}
-            className="text-gray-300 hover:text-red-500 transition-colors p-2 dark:text-gray-600 dark:hover:text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg"
+            className="text-gray-500 hover:text-red-600 transition-colors p-2 dark:text-gray-400 dark:hover:text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg"
             aria-label="Eliminar tarea"
           >
             <Trash2 size={18} />

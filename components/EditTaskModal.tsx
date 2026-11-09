@@ -42,7 +42,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 border dark:border-gray-700">
         <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
           <h3 className="font-bold text-gray-800 dark:text-white text-lg">Editar Tarea</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+          <button onClick={onClose} aria-label="Cerrar" className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
             <X size={24} />
           </button>
         </div>
@@ -99,7 +99,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
                 onChange={(e) => { const v = Number(e.target.value); if (Number.isFinite(v)) setRadius(Math.max(50, Math.min(1000, v))); }}
                 className="w-full h-2 bg-blue-200 dark:bg-blue-900 rounded-lg appearance-none cursor-pointer accent-blue-600"
               />
-              <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+              <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mt-1">
                 <span>50m</span>
                 <span>1km</span>
               </div>

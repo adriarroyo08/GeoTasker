@@ -17,7 +17,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, title, messa
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 border dark:border-gray-700">
         <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
           <h3 className="font-bold text-gray-800 dark:text-white text-lg">{title}</h3>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+          <button onClick={onCancel} aria-label="Cerrar" className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
             <X size={24} />
           </button>
         </div>
